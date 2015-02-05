@@ -38,10 +38,10 @@ OPT_LIBS += -L$(PROMC)/lib -lpromc -lprotoc -lprotobuf -lprotobuf-lite -lcbook -
 endif
 
 ifneq ($(PYTHIA8),)
-#HAS_PYTHIA8 = true
+HAS_PYTHIA8 = true
 CXXFLAGS += -I$(PYTHIA8)/include
 CXXFLAGS += -I$(PYTHIA8)/include/Pythia8
-OPT_LIBS += -L$(PYTHIA8)/lib -lpythia8 -ldl
+OPT_LIBS += -L$(PYTHIA8)/lib -lpythia8 -ldl -L${LHAPDF}/lib -lLHAPDF
 endif
 
 DELPHES_LIBS += $(OPT_LIBS)
