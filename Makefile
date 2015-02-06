@@ -1458,7 +1458,6 @@ TCL_OBJ +=  \
 external/fastjet/ClusterSequence.hh: \
 	external/fastjet/PseudoJet.hh \
 	external/fastjet/Error.hh \
-	external/fastjet/JetDefinition.hh \
 	external/fastjet/SharedPtr.hh \
 	external/fastjet/LimitedWarning.hh \
 	external/fastjet/FunctionOfPseudoJet.hh \
