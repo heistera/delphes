@@ -11,25 +11,29 @@
 
 #include "tcl/tcl.h"
 
-#include <iostream>
-#include <iomanip>
+#include "TSystem.h"
+
 #include <fstream>
-#include <string>
-#include <stdexcept>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 using namespace std;
 
 static Tcl_ObjCmdProc ModuleObjCmdProc;
+static Tcl_ObjCmdProc SourceObjCmdProc;
 
 //------------------------------------------------------------------------------
 
 ExRootConfReader::ExRootConfReader() :
-  fTclInterp(0)
+  fTopDir(0), fTclInterp(0)
 {
   fTclInterp = Tcl_CreateInterp();
 
   Tcl_CreateObjCommand(fTclInterp, "module", ModuleObjCmdProc, this, 0);
+  Tcl_CreateObjCommand(fTclInterp, "source", SourceObjCmdProc, this, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -41,16 +45,8 @@ ExRootConfReader::~ExRootConfReader()
 
 //------------------------------------------------------------------------------
 
-void ExRootConfReader::ReadFile(const char *fileName)
+void ExRootConfReader::ReadFile(const char *fileName, bool isTop)
 {
-/*
-  ifstream inputFileStream(fileName);
-  string cmdBuffer = string(istreambuf_iterator<char>(inputFileStream), istreambuf_iterator<char>());
-
-  Tcl_Obj *cmdObjPtr = Tcl_NewObj();
-  cmdObjPtr->bytes = const_cast<char *>(cmdBuffer.c_str());
-  cmdObjPtr->length = cmdBuffer.size();
-*/
   stringstream message;
 
   ifstream inputFileStream(fileName, ios::in | ios::ate);
@@ -59,6 +55,8 @@ void ExRootConfReader::ReadFile(const char *fileName)
     message << "can't open configuration file " << fileName;
     throw runtime_error(message.str());
   }
+
+  if(isTop) fTopDir = gSystem->DirName(fileName);
 
   int file_length = inputFileStream.tellg();
   inputFileStream.seekg(0, ios::beg);
@@ -92,7 +90,7 @@ void ExRootConfReader::ReadFile(const char *fileName)
 ExRootConfParam ExRootConfReader::GetParam(const char *name)
 {
   Tcl_Obj *object;
-  Tcl_Obj *variableName = Tcl_NewStringObj(const_cast<char *>(name),-1);
+  Tcl_Obj *variableName = Tcl_NewStringObj(const_cast<char *>(name), -1);
   object = Tcl_ObjGetVar2(fTclInterp, variableName, 0, TCL_GLOBAL_ONLY);
   return ExRootConfParam(name, object, fTclInterp);
 }
@@ -187,30 +185,46 @@ void ExRootConfReader::AddModule(const char *className, const char *moduleName)
 
 int ModuleObjCmdProc(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
+  ExRootConfReader *reader = static_cast<ExRootConfReader *>(clientData);
+
   if(objc < 3)
   {
-/*
-    Tcl_SetResult(interp, "wrong # args: should be \"module className moduleName arg ?arg...?\"", 0);
-*/
     Tcl_WrongNumArgs(interp, 1, objv, "className moduleName ?arg...?");
-		return TCL_ERROR;
+    return TCL_ERROR;
   }
-
-  ExRootConfReader *test = (ExRootConfReader*) clientData;
 
   // add module to a list of modules to be created
 
-  test->AddModule(Tcl_GetStringFromObj(objv[1], 0), Tcl_GetStringFromObj(objv[2], 0));
+  reader->AddModule(Tcl_GetStringFromObj(objv[1], 0), Tcl_GetStringFromObj(objv[2], 0));
 
   if(objc > 3)
   {
     Tcl_Obj *object = Tcl_NewListObj(0, 0);
     Tcl_ListObjAppendElement(interp, object, Tcl_NewStringObj("namespace", -1));
     Tcl_ListObjAppendElement(interp, object, Tcl_NewStringObj("eval", -1));
-    Tcl_ListObjAppendList(interp, object, Tcl_NewListObj(objc-2, objv+2));
+    Tcl_ListObjAppendList(interp, object, Tcl_NewListObj(objc - 2, objv + 2));
 
     return Tcl_GlobalEvalObj(interp, object);
   }
+
+  return TCL_OK;
+}
+
+//------------------------------------------------------------------------------
+
+int SourceObjCmdProc(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
+{
+  ExRootConfReader *reader = static_cast<ExRootConfReader *>(clientData);
+  stringstream fileName;
+
+  if(objc != 2)
+  {
+    Tcl_WrongNumArgs(interp, 1, objv, "fileName");
+    return TCL_ERROR;
+  }
+
+  fileName << reader->GetTopDir() << "/" << Tcl_GetStringFromObj(objv[1], 0);
+  reader->ReadFile(fileName.str().c_str(), false);
 
   return TCL_OK;
 }
@@ -230,7 +244,7 @@ int ExRootConfParam::GetInt(int defaultValue)
   int result = defaultValue;
   if(fObject && TCL_OK != Tcl_GetIntFromObj(fTclInterp, fObject, &result))
   {
-    message << "parameter '"<< fName << "' is not an integer." << endl;
+    message << "parameter '" << fName << "' is not an integer." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }
@@ -245,7 +259,7 @@ long ExRootConfParam::GetLong(long defaultValue)
   long result = defaultValue;
   if(fObject && TCL_OK != Tcl_GetLongFromObj(fTclInterp, fObject, &result))
   {
-    message << "parameter '"<< fName << "' is not an long integer." << endl;
+    message << "parameter '" << fName << "' is not an long integer." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }
@@ -260,7 +274,7 @@ double ExRootConfParam::GetDouble(double defaultValue)
   double result = defaultValue;
   if(fObject && TCL_OK != Tcl_GetDoubleFromObj(fTclInterp, fObject, &result))
   {
-    message << "parameter '"<< fName << "' is not a number." << endl;
+    message << "parameter '" << fName << "' is not a number." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }
@@ -275,7 +289,7 @@ bool ExRootConfParam::GetBool(bool defaultValue)
   int result = defaultValue;
   if(fObject && TCL_OK != Tcl_GetBooleanFromObj(fTclInterp, fObject, &result))
   {
-    message << "parameter '"<< fName << "' is not a boolean." << endl;
+    message << "parameter '" << fName << "' is not a boolean." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }
@@ -288,7 +302,7 @@ const char *ExRootConfParam::GetString(const char *defaultValue)
 {
   const char *result = defaultValue;
   if(fObject) result = Tcl_GetStringFromObj(fObject, 0);
-  return result;  
+  return result;
 }
 
 //------------------------------------------------------------------------------
@@ -299,11 +313,11 @@ int ExRootConfParam::GetSize()
   int length = 0;
   if(fObject && TCL_OK != Tcl_ListObjLength(fTclInterp, fObject, &length))
   {
-    message << "parameter '"<< fName << "' is not a list." << endl;
+    message << "parameter '" << fName << "' is not a list." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }
-  return length;  
+  return length;
 }
 
 //------------------------------------------------------------------------------
@@ -314,7 +328,7 @@ ExRootConfParam ExRootConfParam::operator[](int index)
   Tcl_Obj *object = 0;
   if(fObject && TCL_OK != Tcl_ListObjIndex(fTclInterp, fObject, index, &object))
   {
-    message << "parameter '"<< fName << "' is not a list." << endl;
+    message << "parameter '" << fName << "' is not a list." << endl;
     message << fName << " = " << Tcl_GetStringFromObj(fObject, 0);
     throw runtime_error(message.str());
   }

@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /** \class DelphesHepMCReader
  *
  *  Reads HepMC file
@@ -27,20 +26,20 @@
 
 #include "classes/DelphesHepMCReader.h"
 
-#include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 #include <map>
 #include <vector>
 
 #include <stdio.h>
 
-#include "TObjArray.h"
-#include "TStopwatch.h"
 #include "TDatabasePDG.h"
-#include "TParticlePDG.h"
 #include "TLorentzVector.h"
+#include "TObjArray.h"
+#include "TParticlePDG.h"
+#include "TStopwatch.h"
 
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
@@ -50,7 +49,7 @@
 
 using namespace std;
 
-static const int kBufferSize  = 1024;
+static const int kBufferSize = 16384;
 
 //---------------------------------------------------------------------------
 
@@ -110,8 +109,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
   TObjArray *stableParticleOutputArray,
   TObjArray *partonOutputArray)
 {
-  map< int, pair< int, int > >::iterator itMotherMap;
-  map< int, pair< int, int > >::iterator itDaughterMap;
+  map<int, pair<int, int> >::iterator itMotherMap;
+  map<int, pair<int, int> >::iterator itDaughterMap;
   char key, momentumUnit[4], positionUnit[3];
   int i, rc, state;
   double weight;
@@ -140,7 +139,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid event format" << endl;
+      cerr << "** ERROR: "
+           << "invalid event format" << endl;
       return kFALSE;
     }
 
@@ -154,7 +154,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid event format" << endl;
+      cerr << "** ERROR: "
+           << "invalid event format" << endl;
       return kFALSE;
     }
 
@@ -166,7 +167,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid event format" << endl;
+      cerr << "** ERROR: "
+           << "invalid event format" << endl;
       return kFALSE;
     }
   }
@@ -176,7 +178,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(rc != 2)
     {
-      cerr << "** ERROR: " << "invalid units format" << endl;
+      cerr << "** ERROR: "
+           << "invalid units format" << endl;
       return kFALSE;
     }
 
@@ -188,7 +191,7 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
     {
       fMomentumCoefficient = 0.001;
     }
-    
+
     if(strncmp(positionUnit, "MM", 3) == 0)
     {
       fPositionCoefficient = 1.0;
@@ -198,6 +201,13 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
       fPositionCoefficient = 10.0;
     }
   }
+
+  else if(key == 'C')
+  {
+    rc = bufferStream.ReadDbl(fCrossSection)
+      && bufferStream.ReadDbl(fCrossSectionError);
+  }
+
   else if(key == 'F')
   {
     rc = bufferStream.ReadInt(fID1)
@@ -210,7 +220,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid PDF format" << endl;
+      cerr << "** ERROR: "
+           << "invalid PDF format" << endl;
       return kFALSE;
     }
   }
@@ -227,7 +238,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid vertex format" << endl;
+      cerr << "** ERROR: "
+           << "invalid vertex format" << endl;
       return kFALSE;
     }
     --fVertexCounter;
@@ -248,7 +260,8 @@ bool DelphesHepMCReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid particle format" << endl;
+      cerr << "** ERROR: "
+           << "invalid particle format" << endl;
       return kFALSE;
     }
 
@@ -314,6 +327,8 @@ void DelphesHepMCReader::AnalyzeEvent(ExRootTreeBranch *branch, long long eventN
   element->ProcessID = fProcessID;
   element->MPI = fMPI;
   element->Weight = fWeight.size() > 0 ? fWeight[0] : 1.0;
+  element->CrossSection = fCrossSection;
+  element->CrossSectionError = fCrossSectionError;
   element->Scale = fScale;
   element->AlphaQED = fAlphaQED;
   element->AlphaQCD = fAlphaQCD;
@@ -328,6 +343,21 @@ void DelphesHepMCReader::AnalyzeEvent(ExRootTreeBranch *branch, long long eventN
 
   element->ReadTime = readStopWatch->RealTime();
   element->ProcTime = procStopWatch->RealTime();
+}
+
+//---------------------------------------------------------------------------
+
+void DelphesHepMCReader::AnalyzeWeight(ExRootTreeBranch *branch)
+{
+  Weight *element;
+  vector<double>::const_iterator itWeight;
+
+  for(itWeight = fWeight.begin(); itWeight != fWeight.end(); ++itWeight)
+  {
+    element = static_cast<Weight *>(branch->NewEntry());
+
+    element->Weight = *itWeight;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -349,7 +379,7 @@ void DelphesHepMCReader::AnalyzeParticle(DelphesFactory *factory,
   candidate->Status = fStatus;
 
   pdgParticle = fPDG->GetParticle(fPID);
-  candidate->Charge = pdgParticle ? int(pdgParticle->Charge()/3.0) : -999;
+  candidate->Charge = pdgParticle ? int(pdgParticle->Charge() / 3.0) : -999;
   candidate->Mass = fMass;
 
   candidate->Momentum.SetPxPyPzE(fPx, fPy, fPz, fE);
@@ -387,7 +417,7 @@ void DelphesHepMCReader::AnalyzeParticle(DelphesFactory *factory,
 
   if(!pdgParticle) return;
 
-  if(fStatus == 1 && pdgParticle->Stable())
+  if(fStatus == 1)
   {
     stableParticleOutputArray->Add(candidate);
   }
@@ -402,8 +432,8 @@ void DelphesHepMCReader::AnalyzeParticle(DelphesFactory *factory,
 void DelphesHepMCReader::FinalizeParticles(TObjArray *allParticleOutputArray)
 {
   Candidate *candidate;
-  map< int, pair< int, int > >::iterator itMotherMap;
-  map< int, pair< int, int > >::iterator itDaughterMap;
+  map<int, pair<int, int> >::iterator itMotherMap;
+  map<int, pair<int, int> >::iterator itDaughterMap;
   int i;
 
   for(i = 0; i < allParticleOutputArray->GetEntriesFast(); ++i)

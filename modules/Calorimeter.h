@@ -41,7 +41,6 @@ class Candidate;
 class Calorimeter: public DelphesModule
 {
 public:
-
   Calorimeter();
   ~Calorimeter();
 
@@ -50,20 +49,16 @@ public:
   void Finish();
 
 private:
-
-  typedef std::map< Long64_t, std::pair< Double_t, Double_t > > TFractionMap; //!
-  typedef std::map< Double_t, std::set< Double_t > > TBinMap; //!
+  typedef std::map<Long64_t, std::pair<Double_t, Double_t> > TFractionMap; //!
+  typedef std::map<Double_t, std::set<Double_t> > TBinMap; //!
 
   Candidate *fTower;
   Double_t fTowerEta, fTowerPhi, fTowerEdges[4];
-  Double_t fTowerECalEnergy, fTowerHCalEnergy;
-  Double_t fTrackECalEnergy, fTrackHCalEnergy;
+  Double_t fECalTowerEnergy, fHCalTowerEnergy;
+  Double_t fECalTrackEnergy, fHCalTrackEnergy;
 
-  Double_t fTowerECalTime, fTowerHCalTime;
-  Double_t fTrackECalTime, fTrackHCalTime;
-
-  Double_t fTowerECalTimeWeight, fTowerHCalTimeWeight;
-  Double_t fTrackECalTimeWeight, fTrackHCalTimeWeight;
+  Double_t fTimingEnergyMin;
+  Bool_t fElectronsFromTrack;
 
   Int_t fTowerTrackHits, fTowerPhotonHits;
 
@@ -73,21 +68,24 @@ private:
   Double_t fECalEnergySignificanceMin;
   Double_t fHCalEnergySignificanceMin;
 
+  Double_t fECalTrackSigma;
+  Double_t fHCalTrackSigma;
+
   Bool_t fSmearTowerCenter;
 
   TFractionMap fFractionMap; //!
   TBinMap fBinMap; //!
 
-  std::vector < Double_t > fEtaBins;
-  std::vector < std::vector < Double_t >* > fPhiBins;
+  std::vector<Double_t> fEtaBins;
+  std::vector<std::vector<Double_t> *> fPhiBins;
 
-  std::vector < Long64_t > fTowerHits;
+  std::vector<Long64_t> fTowerHits;
 
-  std::vector < Double_t > fTowerECalFractions;
-  std::vector < Double_t > fTowerHCalFractions;
+  std::vector<Double_t> fECalTowerFractions;
+  std::vector<Double_t> fHCalTowerFractions;
 
-  std::vector < Double_t > fTrackECalFractions;
-  std::vector < Double_t > fTrackHCalFractions;
+  std::vector<Double_t> fECalTrackFractions;
+  std::vector<Double_t> fHCalTrackFractions;
 
   DelphesFormula *fECalResolutionFormula; //!
   DelphesFormula *fHCalResolutionFormula; //!
@@ -105,8 +103,11 @@ private:
   TObjArray *fEFlowPhotonOutputArray; //!
   TObjArray *fEFlowNeutralHadronOutputArray; //!
 
-  TObjArray *fTowerTrackArray; //!
-  TIterator *fItTowerTrackArray; //!
+  TObjArray *fECalTowerTrackArray; //!
+  TIterator *fItECalTowerTrackArray; //!
+
+  TObjArray *fHCalTowerTrackArray; //!
+  TIterator *fItHCalTowerTrackArray; //!
 
   void FinalizeTower();
   Double_t LogNormal(Double_t mean, Double_t sigma);

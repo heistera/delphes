@@ -71,9 +71,12 @@ proc dictDeps {dictPrefix args} {
 
     dependencies $fileName "$dictName$srcSuf:$suffix$fileName"
 
-    puts -nonewline [file tail $dictName$pcmSuf]:$suffix
-    puts -nonewline $dictName$pcmSuf$suffix
+    puts -nonewline $dictName$pcmSuf:$suffix
     puts -nonewline $dictName$srcSuf
+    puts {}
+
+    puts -nonewline [file tail $dictName$pcmSuf]:$suffix
+    puts -nonewline $dictName$pcmSuf
     puts {}
   }
 
@@ -102,7 +105,7 @@ proc sourceDeps {srcPrefix args} {
 
     if {$fileName == "modules/PileUpMergerPythia8.cc"} {
       lappend srcObjFilesPythia8 $srcObjName$objSuf
-    } elseif {[string match {modules/FastJet*.cc} $fileName] && $srcPrefix != {FASTJET}} {
+    } elseif {([string match {modules/FastJet*.cc} $fileName] || [string match {modules/RunPUPPI.cc} $fileName]) && $srcPrefix != {FASTJET}} {
       continue
     } else {
       lappend srcObjFiles $srcObjName$objSuf
@@ -206,7 +209,7 @@ PcmSuf = _rdict.pcm
 
 CXXFLAGS += $(ROOTCFLAGS) -Wno-write-strings -D_FILE_OFFSET_BITS=64 -DDROP_CGAL -I. -Iexternal -Iexternal/tcl
 DELPHES_LIBS = $(shell $(RC) --libs) -lEG $(SYSLIBS)
-DISPLAY_LIBS = $(shell $(RC) --evelibs) -lGuiHtml  $(SYSLIBS)
+DISPLAY_LIBS = $(shell $(RC) --evelibs) -lGuiHtml $(SYSLIBS)
 
 ifneq ($(CMSSW_FWLITE_INCLUDE_PATH),)
 HAS_CMSSW = true
@@ -221,17 +224,54 @@ endif
 OPT_LIBS += -lGenVector -lFWCoreFWLite -lDataFormatsFWLite -lDataFormatsCommon -lDataFormatsPatCandidates -lDataFormatsLuminosity -lSimDataFormatsGeneratorProducts -lCommonToolsUtils -lDataFormatsCommon
 endif
 
+# check consistency
+ifneq ($(PROMC),)
+ifneq ($(PROIO),)
+$(error Attention:  PROMC and PROIO env. variables are set simultaneously. You cannot compile ProMC and ProIO readers in one compilation process due to an inconsistency in protocol buffers libraries. The suggestion is to compile these two readers in two steps. First unset PROIO variable and then \"configure; make\". After this, unset PROMC, set PROIO,  and run \"configure; make\". During runs, make sure shared libraries are set correctly.)
+endif
+endif
+
 ifneq ($(PROMC),)
 HAS_PROMC = true
+$(info ProMC event reader is requested)
 CXXFLAGS += -I$(PROMC)/include -I$(PROMC)/src
 OPT_LIBS += -L$(PROMC)/lib -lpromc -lprotoc -lprotobuf -lprotobuf-lite -lcbook -lz
 endif
 
+ifneq ($(PROIO),)
+HAS_PROIO = true
+$(info ProIO reader is requested)
+ifeq ($(PROTOBUF),)
+$(error but PROTOBUF variable is not set.)
+endif
+PROTOBUF_FILE=$(PROTOBUF)/lib/libprotobuf.a
+ifeq ("$(wildcard $(PROTOBUF_FILE))","")
+$(error PROTOBUF variable is set, but it does not point to valid $(PROTOBUF_FILE))
+endif
+ifeq ($(LZ4),)
+$(error but LZ4 variable is not set.)
+endif
+LZ4_FILE=$(LZ4)/lib/liblz4.so
+ifeq ("$(wildcard $(LZ4_FILE))","")
+$(error LZ4 variable is set,  but it does not point to valid $(LZ4_FILE))
+endif
+CXXFLAGS += -I$(PROIO)/include -I$(PROTOBUF)/include -I$(LZ4)/include -I$(PROIO)/src
+OPT_LIBS += -L$(PROTOBUF)/lib -lprotobuf -L$(PROIO)/lib -lproio -lproio.pb -lz -L$(LZ4)/lib -llz4
+endif
+
+ifeq ($(HAS_PYTHIA8),true)
 ifneq ($(PYTHIA8),)
+<<<<<<< HEAD
 HAS_PYTHIA8 = true
 CXXFLAGS += -I$(PYTHIA8)/include
 CXXFLAGS += -I$(PYTHIA8)/include/Pythia8
 OPT_LIBS += -L$(PYTHIA8)/lib -lpythia8 -ldl -L${LHAPDF}/lib -lLHAPDF
+=======
+CXXFLAGS += -I$(PYTHIA8)/include
+CXXFLAGS += -I$(PYTHIA8)/include/Pythia8
+OPT_LIBS += -L$(PYTHIA8)/lib -lpythia8 -ldl -lz
+endif
+>>>>>>> upstream/master
 endif
 
 DELPHES_LIBS += $(OPT_LIBS)
@@ -256,9 +296,9 @@ all:
 
 }
 
-executableDeps {converters/*.cpp} {examples/*.cpp}
+executableDeps {converters/*.cpp} {examples/*.cpp} {validation/*.cpp}
 
-executableDeps {readers/DelphesHepMC.cpp} {readers/DelphesLHEF.cpp} {readers/DelphesSTDHEP.cpp}
+executableDeps {readers/DelphesHepMC.cpp} {readers/DelphesLHEF.cpp} {readers/DelphesSTDHEP.cpp} {readers/DelphesROOT.cpp}
 
 puts {ifeq ($(HAS_CMSSW),true)}
 executableDeps {readers/DelphesCMSFWLite.cpp}
@@ -267,6 +307,11 @@ puts {}
 
 puts {ifeq ($(HAS_PROMC),true)}
 executableDeps {readers/DelphesProMC.cpp}
+puts {endif}
+puts {}
+
+puts {ifeq ($(HAS_PROIO),true)}
+executableDeps {readers/DelphesProIO.cpp}
 puts {endif}
 puts {}
 
@@ -284,7 +329,7 @@ dictDeps {DISPLAY_DICT} {display/DisplayLinkDef.h}
 
 sourceDeps {DELPHES} {classes/*.cc} {modules/*.cc} {external/ExRootAnalysis/*.cc} {external/Hector/*.cc}
 
-sourceDeps {FASTJET} {modules/FastJet*.cc} {external/fastjet/*.cc} {external/fastjet/tools/*.cc} {external/fastjet/plugins/*/*.cc} {external/fastjet/contribs/*/*.cc} 
+sourceDeps {FASTJET} {modules/FastJet*.cc} {modules/RunPUPPI.cc} {external/PUPPI/*.cc} {external/fastjet/*.cc} {external/fastjet/tools/*.cc} {external/fastjet/plugins/*/*.cc} {external/fastjet/contribs/*/*.cc}
 
 sourceDeps {DISPLAY} {display/*.cc}
 
@@ -395,7 +440,7 @@ distclean: clean
 dist:
 	@echo ">> Building $(DISTTAR)"
 	@mkdir -p $(DISTDIR)
-	@cp -a CHANGELOG CMakeLists.txt COPYING CREDITS DelphesEnv.sh README README_4LHCb VERSION Makefile MinBias.pileup configure cards classes converters display doc examples external modules python readers $(DISTDIR)
+	@cp -a AUTHORS CHANGELOG CMakeLists.txt COPYING DelphesEnv.sh LICENSE NOTICE README README_4LHCb VERSION Makefile MinBias.pileup configure cards classes converters display doc examples external modules python readers validation $(DISTDIR)
 	@find $(DISTDIR) -depth -name .\* -exec rm -rf {} \;
 	@tar -czf $(DISTTAR) $(DISTDIR)
 	@rm -rf $(DISTDIR)
@@ -408,13 +453,19 @@ dist:
 	@mkdir -p $(@D)
 	@echo ">> Generating $@"
 	@rootcint -f $@ -c -Iexternal $<
-	@echo "#define private public" > $@.arch
-	@echo "#define protected public" >> $@.arch
 	@mv $@ $@.base
-	@cat $@.arch $< $@.base > $@
-	@rm $@.arch $@.base
+	@cat $< $@.base > $@
+	@rm $@.base
 
-%Dict$(PcmSuf):
+$(DELPHES_DICT_PCM): %Dict$(PcmSuf):
+	@echo ">> Copying $@"
+	@cp $< $@
+
+$(FASTJET_DICT_PCM): %Dict$(PcmSuf):
+	@echo ">> Copying $@"
+	@cp $< $@
+
+$(DISPLAY_DICT_PCM): %Dict$(PcmSuf):
 	@echo ">> Copying $@"
 	@cp $< $@
 

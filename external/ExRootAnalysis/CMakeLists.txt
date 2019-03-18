@@ -11,5 +11,12 @@ DELPHES_GENERATE_DICTIONARY(ExRootAnalysisDict ${headers} LINKDEF ExRootAnalysis
 
 add_library(ExRootAnalysis OBJECT ${sources} ExRootAnalysisDict.cxx)
 
-# install headers needed by public Delphes headers to include/
-install(FILES ExRootTask.h ExRootConfReader.h DESTINATION include/ExRootAnalysis)
+# install headers
+install(FILES ${headers} DESTINATION include/ExRootAnalysis)
+
+# install pcms if they are created
+if (NOT ${ROOT_VERSION} VERSION_LESS "6.0.0")
+  install(FILES
+      ${PROJECT_BINARY_DIR}/external/ExRootAnalysis/libExRootAnalysisDict_rdict.pcm
+      DESTINATION lib)
+endif()

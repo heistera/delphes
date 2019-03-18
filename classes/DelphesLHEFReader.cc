@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /** \class DelphesLHEFReader
  *
  *  Reads LHEF file
@@ -27,17 +26,17 @@
 
 #include "classes/DelphesLHEFReader.h"
 
-#include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 #include <stdio.h>
 
-#include "TObjArray.h"
-#include "TStopwatch.h"
 #include "TDatabasePDG.h"
-#include "TParticlePDG.h"
 #include "TLorentzVector.h"
+#include "TObjArray.h"
+#include "TParticlePDG.h"
+#include "TStopwatch.h"
 
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
@@ -47,13 +46,14 @@
 
 using namespace std;
 
-static const int kBufferSize  = 1024;
+static const int kBufferSize = 16384;
 
 //---------------------------------------------------------------------------
 
 DelphesLHEFReader::DelphesLHEFReader() :
   fInputFile(0), fBuffer(0), fPDG(0),
-  fEventReady(kFALSE), fEventCounter(-1), fParticleCounter(-1)
+  fEventReady(kFALSE), fEventCounter(-1), fParticleCounter(-1), fCrossSection(1)
+
 {
   fBuffer = new char[kBufferSize];
 
@@ -81,7 +81,7 @@ void DelphesLHEFReader::Clear()
   fEventReady = kFALSE;
   fEventCounter = -1;
   fParticleCounter = -1;
-  fRwgtList.clear();
+  fWeightList.clear();
 }
 
 //---------------------------------------------------------------------------
@@ -98,9 +98,9 @@ bool DelphesLHEFReader::ReadBlock(DelphesFactory *factory,
   TObjArray *stableParticleOutputArray,
   TObjArray *partonOutputArray)
 {
-  int rc;
+  int rc, id;
   char *pch;
-  double weight;
+  double weight, xsec;
 
   if(!fgets(fBuffer, kBufferSize, fInputFile)) return kFALSE;
 
@@ -122,7 +122,8 @@ bool DelphesLHEFReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid event format" << endl;
+      cerr << "** ERROR: "
+           << "invalid event format" << endl;
       return kFALSE;
     }
 
@@ -146,7 +147,8 @@ bool DelphesLHEFReader::ReadBlock(DelphesFactory *factory,
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid particle format" << endl;
+      cerr << "** ERROR: "
+           << "invalid particle format" << endl;
       return kFALSE;
     }
 
@@ -157,23 +159,66 @@ bool DelphesLHEFReader::ReadBlock(DelphesFactory *factory,
   }
   else if(strstr(fBuffer, "<wgt"))
   {
-    pch = strstr(fBuffer, ">");
+    pch = strpbrk(fBuffer, "\"'");
     if(!pch)
     {
-      cerr << "** ERROR: " << "invalid weight format" << endl;
+      cerr << "** ERROR: "
+           << "invalid weight format" << endl;
       return kFALSE;
     }
 
-    DelphesStream bufferStream(pch + 1);
-    rc = bufferStream.ReadDbl(weight);
+    DelphesStream idStream(pch + 1);
+    rc = idStream.ReadInt(id);
+
+    pch = strchr(fBuffer, '>');
+    if(!pch)
+    {
+      cerr << "** ERROR: "
+           << "invalid weight format" << endl;
+      return kFALSE;
+    }
+
+    DelphesStream weightStream(pch + 1);
+    rc = weightStream.ReadDbl(weight);
 
     if(!rc)
     {
-      cerr << "** ERROR: " << "invalid weight format" << endl;
+      cerr << "** ERROR: "
+           << "invalid weight format" << endl;
       return kFALSE;
     }
 
-    fRwgtList.push_back(weight);
+    fWeightList.push_back(make_pair(id, weight));
+  }
+  else if(strstr(fBuffer, "<xsecinfo"))
+  {
+    pch = strstr(fBuffer, "totxsec");
+    if(!pch)
+    {
+      cerr << "** ERROR: "
+           << "invalid cross section format" << endl;
+      return kFALSE;
+    }
+
+    pch = strpbrk(pch + 1, "\"'");
+    if(!pch)
+    {
+      cerr << "** ERROR: "
+           << "invalid cross section format" << endl;
+      return kFALSE;
+    }
+
+    DelphesStream xsecStream(pch + 1);
+    rc = xsecStream.ReadDbl(xsec);
+
+    if(!rc)
+    {
+      cerr << "** ERROR: "
+           << "invalid cross section format" << endl;
+      return kFALSE;
+    }
+
+    fCrossSection = xsec;
   }
   else if(strstr(fBuffer, "</event>"))
   {
@@ -195,6 +240,8 @@ void DelphesLHEFReader::AnalyzeEvent(ExRootTreeBranch *branch, long long eventNu
 
   element->ProcessID = fProcessID;
   element->Weight = fWeight;
+  element->CrossSection = fCrossSection;
+
   element->ScalePDF = fScalePDF;
   element->AlphaQED = fAlphaQED;
   element->AlphaQCD = fAlphaQCD;
@@ -205,16 +252,17 @@ void DelphesLHEFReader::AnalyzeEvent(ExRootTreeBranch *branch, long long eventNu
 
 //---------------------------------------------------------------------------
 
-void DelphesLHEFReader::AnalyzeRwgt(ExRootTreeBranch *branch)
+void DelphesLHEFReader::AnalyzeWeight(ExRootTreeBranch *branch)
 {
-  Weight *element;
-  vector<double>::const_iterator itRwgtList;
+  LHEFWeight *element;
+  vector<pair<int, double> >::const_iterator itWeightList;
 
-  for(itRwgtList = fRwgtList.begin(); itRwgtList != fRwgtList.end(); ++itRwgtList)
+  for(itWeightList = fWeightList.begin(); itWeightList != fWeightList.end(); ++itWeightList)
   {
-    element = static_cast<Weight *>(branch->NewEntry());
+    element = static_cast<LHEFWeight *>(branch->NewEntry());
 
-    element->Weight = *itRwgtList;
+    element->ID = itWeightList->first;
+    element->Weight = itWeightList->second;
   }
 }
 
@@ -237,7 +285,7 @@ void DelphesLHEFReader::AnalyzeParticle(DelphesFactory *factory,
   candidate->Status = fStatus;
 
   pdgParticle = fPDG->GetParticle(fPID);
-  candidate->Charge = pdgParticle ? int(pdgParticle->Charge()/3.0) : -999;
+  candidate->Charge = pdgParticle ? int(pdgParticle->Charge() / 3.0) : -999;
   candidate->Mass = fMass;
 
   candidate->Momentum.SetPxPyPzE(fPx, fPy, fPz, fE);
@@ -253,7 +301,7 @@ void DelphesLHEFReader::AnalyzeParticle(DelphesFactory *factory,
 
   if(!pdgParticle) return;
 
-  if(fStatus == 1 && pdgParticle->Stable())
+  if(fStatus == 1)
   {
     stableParticleOutputArray->Add(candidate);
   }

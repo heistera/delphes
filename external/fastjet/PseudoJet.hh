@@ -1,7 +1,7 @@
 //FJSTARTHEADER
-// $Id: PseudoJet.hh 3566 2014-08-11 15:36:34Z salam $
+// $Id: PseudoJet.hh 4354 2018-04-22 07:12:37Z salam $
 //
-// Copyright (c) 2005-2014, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+// Copyright (c) 2005-2018, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
 //
 //----------------------------------------------------------------------
 // This file is part of FastJet.
@@ -82,8 +82,10 @@ class PseudoJet {
   PseudoJet(const double px, const double py, const double pz, const double E);
 
   /// constructor from any object that has px,py,pz,E = some_four_vector[0--3],
+  #ifndef SWIG
   template <class L> PseudoJet(const L & some_four_vector);
-
+  #endif
+  
   // Constructor that performs minimal initialisation (only that of
   // the shared pointers), of use in certain speed-critical contexts
   //
@@ -169,6 +171,14 @@ class PseudoJet {
   /// return the transverse energy squared
   inline double Et2() const {return (_kt2==0) ? 0.0 : _E*_E/(1.0+_pz*_pz/_kt2);}
 
+  /// cos of the polar angle
+  /// should we have: min(1.0,max(-1.0,_pz/sqrt(modp2()))); 
+  inline double cos_theta() const {
+    return std::min(1.0, std::max(-1.0, _pz/sqrt(modp2())));
+  }
+  /// polar angle
+  inline double theta() const { return acos(cos_theta()); }
+
   /// returns component i, where X==0, Y==1, Z==2, E==3
   double operator () (int i) const ; 
   /// returns component i, where X==0, Y==1, Z==2, E==3
@@ -219,16 +229,16 @@ class PseudoJet {
   //\{
   //----------------------------------------------------------------------
   /// transform this jet (given in the rest frame of prest) into a jet
-  /// in the lab frame [NOT FULLY TESTED]
+  /// in the lab frame
   PseudoJet & boost(const PseudoJet & prest);
   /// transform this jet (given in lab) into a jet in the rest
-  /// frame of prest  [NOT FULLY TESTED]
+  /// frame of prest
   PseudoJet & unboost(const PseudoJet & prest);
 
-  void operator*=(double);
-  void operator/=(double);
-  void operator+=(const PseudoJet &);
-  void operator-=(const PseudoJet &);
+  PseudoJet & operator*=(double);
+  PseudoJet & operator/=(double);
+  PseudoJet & operator+=(const PseudoJet &);
+  PseudoJet & operator-=(const PseudoJet &);
 
   /// reset the 4-momentum according to the supplied components and
   /// put the user and history indices back to their default values
@@ -248,6 +258,7 @@ class PseudoJet {
   /// reset the 4-momentum according to the supplied generic 4-vector
   /// (accessible via indexing, [0]==px,...[3]==E) and put the user
   /// and history indices back to their default values.
+#ifndef SWIG
   template <class L> inline void reset(const L & some_four_vector) {
     // check if some_four_vector can be cast to a PseudoJet
     //
@@ -269,6 +280,7 @@ class PseudoJet {
 	    some_four_vector[2], some_four_vector[3]);
     }
   }
+#endif // SWIG
 
   /// reset the PseudoJet according to the specified pt, rapidity,
   /// azimuth and mass (also resetting indices, etc.)
@@ -436,7 +448,9 @@ class PseudoJet {
 
   /// retrieve a pointer to the (const) user information
   const UserInfoBase * user_info_ptr() const{
-    if (!_user_info()) return NULL;
+    // the line below is not needed since the next line would anyway
+    // return NULL in that case
+    //if (!_user_info) return NULL;
     return _user_info.get();
   }
 
@@ -840,8 +854,20 @@ inline bool operator==(const double val, const PseudoJet & jet) {return jet == v
 inline bool operator!=(const PseudoJet & a, const double val)  {return !(a==val);}
 inline bool operator!=( const double val, const PseudoJet & a) {return !(a==val);}
 
+/// returns the 4-vector dot product of a and b
 inline double dot_product(const PseudoJet & a, const PseudoJet & b) {
   return a.E()*b.E() - a.px()*b.px() - a.py()*b.py() - a.pz()*b.pz();
+}
+
+/// returns the cosine of the angle between a and b
+inline double cos_theta(const PseudoJet & a, const PseudoJet & b) {
+  double dot_3d = a.px()*b.px() + a.py()*b.py() + a.pz()*b.pz();
+  return std::min(1.0, std::max(-1.0, dot_3d/sqrt(a.modp2()*b.modp2())));
+}
+
+/// returns the angle between a and b
+inline double theta(const PseudoJet & a, const PseudoJet & b) {
+  return acos(cos_theta(a,b));
 }
 
 /// returns true if the momenta of the two input jets are identical
@@ -879,7 +905,29 @@ void sort_indices(std::vector<int> & indices,
 /// associated values would be in increasing order (but don't actually
 /// touch the values vector in the process).
 template<class T> std::vector<T> objects_sorted_by_values(const std::vector<T> & objects, 
-					      const std::vector<double> & values);
+					      const std::vector<double> & values) {
+  //assert(objects.size() == values.size());
+  if (objects.size() != values.size()){
+    throw Error("fastjet::objects_sorted_by_values(...): the size of the 'objects' vector must match the size of the 'values' vector");
+  }
+  
+  // get a vector of indices
+  std::vector<int> indices(values.size());
+  for (size_t i = 0; i < indices.size(); i++) {indices[i] = i;}
+  
+  // sort the indices
+  sort_indices(indices, values);
+  
+  // copy the objects 
+  std::vector<T> objects_sorted(objects.size());
+  
+  // place the objects in the correct order
+  for (size_t i = 0; i < indices.size(); i++) {
+    objects_sorted[i] = objects[indices[i]];
+  }
+
+  return objects_sorted;
+}
 
 /// \if internal_doc
 /// @ingroup internal
@@ -903,9 +951,11 @@ private:
 /// constructor from any object that has px,py,pz,E = some_four_vector[0--3],
 // NB: do not know if it really needs to be inline, but when it wasn't
 //     linking failed with g++ (who knows what was wrong...)
+#ifndef SWIG
 template <class L> inline  PseudoJet::PseudoJet(const L & some_four_vector) {
   reset(some_four_vector);
 }
+#endif
 
 //----------------------------------------------------------------------
 inline void PseudoJet::_reset_indices() { 
@@ -969,7 +1019,7 @@ const StructureType & PseudoJet::structure() const{
 // (that is, its structure is compatible with a Transformer::StructureType)
 template<typename TransformerType>
 bool PseudoJet::has_structure_of() const{
-  if (!_structure()) return false;
+  if (!_structure) return false;
 
   return dynamic_cast<const typename TransformerType::StructureType *>(_structure.get()) != 0;
 }
@@ -979,7 +1029,7 @@ bool PseudoJet::has_structure_of() const{
 // NULL is returned if the corresponding type is not met
 template<typename TransformerType>
 const typename TransformerType::StructureType & PseudoJet::structure_of() const{
-  if (!_structure()) 
+  if (!_structure) 
     throw Error("Trying to access the structure of a PseudoJet without an associated structure");
 
   return dynamic_cast<const typename TransformerType::StructureType &>(*_structure);

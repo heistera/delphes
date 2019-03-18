@@ -18,13 +18,13 @@
 
 //------------------------------------------------------------------------------
 
-#ifndef PidFilter_h
-#define PidFilter_h
+#ifndef PdgCodeFilter_h
+#define PdgCodeFilter_h
 
-/** \class Efficiency
+/** \class PdgCodeFilter
  *
- *  Removes particles with specific pdg codes
-  *
+ *  Removes particles with specific PDG codes
+ *
  *  \author M. Selvaggi
  *
  */
@@ -38,7 +38,6 @@ class TObjArray;
 class PdgCodeFilter: public DelphesModule
 {
 public:
-
   PdgCodeFilter();
   ~PdgCodeFilter();
 
@@ -47,8 +46,13 @@ public:
   void Finish();
 
 private:
-
   Double_t fPTMin; //!
+  Bool_t fInvert; //!
+  Bool_t fRequireStatus; //!
+  Int_t fStatus; //!
+  Bool_t fRequireCharge; //!
+  Int_t fCharge; //!
+  Bool_t fRequireNotPileup; //!
 
   std::vector<Int_t> fPdgCodes;
 

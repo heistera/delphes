@@ -36,7 +36,6 @@ class DelphesTF2;
 class PileUpMerger: public DelphesModule
 {
 public:
-
   PileUpMerger();
   ~PileUpMerger();
 
@@ -45,12 +44,16 @@ public:
   void Finish();
 
 private:
-
   Int_t fPileUpDistribution;
   Double_t fMeanPileUp;
 
   Double_t fZVertexSpread;
   Double_t fTVertexSpread;
+
+  Double_t fInputBeamSpotX;
+  Double_t fInputBeamSpotY;
+  Double_t fOutputBeamSpotX;
+  Double_t fOutputBeamSpotY;
 
   DelphesTF2 *fFunction; //!
 

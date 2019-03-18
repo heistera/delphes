@@ -37,6 +37,12 @@
 /* The TrackJet plugin is enabled */
 #define ENABLE_PLUGIN_TRACKJET /**/
 
+/* compile the deprecated parts of the interface using auto-ptr */
+#define HAVE_AUTO_PTR_INTERFACE /**/
+
+/* compiler supports c++14 deprecated keyword */
+/* #undef HAVE_CXX14_DEPRECATED */
+
 /* defined if demangling is enabled at configure time and is supported through
    the GNU C++ ABI */
 /* #undef HAVE_DEMANGLING_SUPPORT */
@@ -47,6 +53,12 @@
 /* Define to 1 if you have the <execinfo.h> header file. */
 #define HAVE_EXECINFO_H 1
 
+/* compiler supports the "explicit" keyword for operators */
+/* #undef HAVE_EXPLICIT_FOR_OPERATORS */
+
+/* compiler supports GNU c++ deprecated attribute */
+#define HAVE_GNUCXX_DEPRECATED /**/
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
@@ -55,6 +67,9 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
+
+/* compiler supports the "override" keyword */
+/* #undef HAVE_OVERRIDE */
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -77,8 +92,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -91,31 +105,34 @@
 #define PACKAGE_NAME "FastJet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "FastJet 3.1.1"
+#define PACKAGE_STRING "FastJet 3.3.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "fastjet"
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.1"
+#define PACKAGE_VERSION "3.3.2"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "3.1.1"
+#define VERSION "3.3.2"
 
 /* Major version of this package */
 #define VERSION_MAJOR 3
 
 /* Minor version of this package */
-#define VERSION_MINOR 1
+#define VERSION_MINOR 3
 
 /* Version of the package under the form XYYZZ (instead of X.Y.Z) */
-#define VERSION_NUMBER 30101
+#define VERSION_NUMBER 30302
 
 /* Patch version of this package */
-#define VERSION_PATCHLEVEL 1
+#define VERSION_PATCHLEVEL 2
 
 /* Pre-release version of this package */
 /* #undef VERSION_PRERELEASE */

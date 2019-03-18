@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /** \class SimpleCalorimeter
  *
  *  Fills SimpleCalorimeter towers, performs SimpleCalorimeter resolution smearing,
@@ -32,22 +31,22 @@
 #include "classes/DelphesFactory.h"
 #include "classes/DelphesFormula.h"
 
-#include "ExRootAnalysis/ExRootResult.h"
-#include "ExRootAnalysis/ExRootFilter.h"
 #include "ExRootAnalysis/ExRootClassifier.h"
+#include "ExRootAnalysis/ExRootFilter.h"
+#include "ExRootAnalysis/ExRootResult.h"
 
-#include "TMath.h"
-#include "TString.h"
-#include "TFormula.h"
-#include "TRandom3.h"
-#include "TObjArray.h"
 #include "TDatabasePDG.h"
+#include "TFormula.h"
 #include "TLorentzVector.h"
+#include "TMath.h"
+#include "TObjArray.h"
+#include "TRandom3.h"
+#include "TString.h"
 
 #include <algorithm>
-#include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -55,11 +54,10 @@ using namespace std;
 
 SimpleCalorimeter::SimpleCalorimeter() :
   fResolutionFormula(0),
-  fItParticleInputArray(0), fItTrackInputArray(0),
-  fTowerTrackArray(0), fItTowerTrackArray(0)
+  fItParticleInputArray(0), fItTrackInputArray(0)
 {
-  fResolutionFormula = new DelphesFormula;
 
+  fResolutionFormula = new DelphesFormula;
   fTowerTrackArray = new TObjArray;
   fItTowerTrackArray = fTowerTrackArray->MakeIterator();
 }
@@ -68,8 +66,8 @@ SimpleCalorimeter::SimpleCalorimeter() :
 
 SimpleCalorimeter::~SimpleCalorimeter()
 {
-  if(fResolutionFormula) delete fResolutionFormula;
 
+  if(fResolutionFormula) delete fResolutionFormula;
   if(fTowerTrackArray) delete fTowerTrackArray;
   if(fItTowerTrackArray) delete fItTowerTrackArray;
 }
@@ -82,8 +80,8 @@ void SimpleCalorimeter::Init()
   Long_t i, j, k, size, sizeEtaBins, sizePhiBins;
   Double_t fraction;
   TBinMap::iterator itEtaBin;
-  set< Double_t >::iterator itPhiBin;
-  vector< Double_t > *phiBins;
+  set<Double_t>::iterator itPhiBin;
+  vector<Double_t> *phiBins;
 
   // read eta and phi bins
   param = GetParam("EtaPhiBins");
@@ -91,11 +89,11 @@ void SimpleCalorimeter::Init()
   fBinMap.clear();
   fEtaBins.clear();
   fPhiBins.clear();
-  for(i = 0; i < size/2; ++i)
+  for(i = 0; i < size / 2; ++i)
   {
-    paramEtaBins = param[i*2];
+    paramEtaBins = param[i * 2];
     sizeEtaBins = paramEtaBins.GetSize();
-    paramPhiBins = param[i*2 + 1];
+    paramPhiBins = param[i * 2 + 1];
     sizePhiBins = paramPhiBins.GetSize();
 
     for(j = 0; j < sizeEtaBins; ++j)
@@ -112,7 +110,7 @@ void SimpleCalorimeter::Init()
   for(itEtaBin = fBinMap.begin(); itEtaBin != fBinMap.end(); ++itEtaBin)
   {
     fEtaBins.push_back(itEtaBin->first);
-    phiBins = new vector< double >(itEtaBin->second.size());
+    phiBins = new vector<double>(itEtaBin->second.size());
     fPhiBins.push_back(phiBins);
     phiBins->clear();
     for(itPhiBin = itEtaBin->second.begin(); itPhiBin != itEtaBin->second.end(); ++itPhiBin)
@@ -129,20 +127,12 @@ void SimpleCalorimeter::Init()
   fFractionMap.clear();
   fFractionMap[0] = 1.0;
 
-  for(i = 0; i < size/2; ++i)
+  for(i = 0; i < size / 2; ++i)
   {
-    paramFractions = param[i*2 + 1];
+    paramFractions = param[i * 2 + 1];
     fraction = paramFractions[0].GetDouble();
-    fFractionMap[param[i*2].GetInt()] = fraction;
+    fFractionMap[param[i * 2].GetInt()] = fraction;
   }
-
-/*
-  TFractionMap::iterator itFractionMap;
-  for(itFractionMap = fFractionMap.begin(); itFractionMap != fFractionMap.end(); ++itFractionMap)
-  {
-    cout << itFractionMap->first << "   " << itFractionMap->second.first  << "   " << itFractionMap->second.second << endl;
-  }
-*/
 
   // read min E value for towers to be saved
   fEnergyMin = GetDouble("EnergyMin", 0.0);
@@ -167,6 +157,8 @@ void SimpleCalorimeter::Init()
 
   // create output arrays
   fTowerOutputArray = ExportArray(GetString("TowerOutputArray", "towers"));
+
+  fEFlowTrackOutputArray = ExportArray(GetString("EFlowTrackOutputArray", "eflowTracks"));
   fEFlowTowerOutputArray = ExportArray(GetString("EFlowTowerOutputArray", "eflowTowers"));
 }
 
@@ -174,7 +166,7 @@ void SimpleCalorimeter::Init()
 
 void SimpleCalorimeter::Finish()
 {
-  vector< vector< Double_t >* >::iterator itPhiBin;
+  vector<vector<Double_t> *>::iterator itPhiBin;
   if(fItParticleInputArray) delete fItParticleInputArray;
   if(fItTrackInputArray) delete fItTrackInputArray;
   for(itPhiBin = fPhiBins.begin(); itPhiBin != fPhiBins.end(); ++itPhiBin)
@@ -194,15 +186,18 @@ void SimpleCalorimeter::Process()
   Long64_t towerHit, towerEtaPhi, hitEtaPhi;
   Double_t fraction;
   Double_t energy;
+  Double_t sigma;
+  Double_t energyGuess;
+
   Int_t pdgCode;
 
   TFractionMap::iterator itFractionMap;
 
-  vector< Double_t >::iterator itEtaBin;
-  vector< Double_t >::iterator itPhiBin;
-  vector< Double_t > *phiBins;
+  vector<Double_t>::iterator itEtaBin;
+  vector<Double_t>::iterator itPhiBin;
+  vector<Double_t> *phiBins;
 
-  vector< Long64_t >::iterator itTowerHits;
+  vector<Long64_t>::iterator itTowerHits;
 
   DelphesFactory *factory = GetFactory();
   fTowerHits.clear();
@@ -212,7 +207,7 @@ void SimpleCalorimeter::Process()
   // loop over all particles
   fItParticleInputArray->Reset();
   number = -1;
-  while((particle = static_cast<Candidate*>(fItParticleInputArray->Next())))
+  while((particle = static_cast<Candidate *>(fItParticleInputArray->Next())))
   {
     const TLorentzVector &particlePosition = particle->Position;
     ++number;
@@ -255,7 +250,7 @@ void SimpleCalorimeter::Process()
   // loop over all tracks
   fItTrackInputArray->Reset();
   number = -1;
-  while((track = static_cast<Candidate*>(fItTrackInputArray->Next())))
+  while((track = static_cast<Candidate *>(fItTrackInputArray->Next())))
   {
     const TLorentzVector &trackPosition = track->Position;
     ++number;
@@ -304,7 +299,7 @@ void SimpleCalorimeter::Process()
   {
     towerHit = (*itTowerHits);
     flags = (towerHit >> 24) & 0x00000000000000FFLL;
-    number = (towerHit) & 0x0000000000FFFFFFLL;
+    number = (towerHit)&0x0000000000FFFFFFLL;
     hitEtaPhi = towerHit >> 32;
 
     if(towerEtaPhi != hitEtaPhi)
@@ -325,8 +320,8 @@ void SimpleCalorimeter::Process()
       phiBins = fPhiBins[etaBin];
 
       // calculate eta and phi of the tower's center
-      fTowerEta = 0.5*(fEtaBins[etaBin - 1] + fEtaBins[etaBin]);
-      fTowerPhi = 0.5*((*phiBins)[phiBin - 1] + (*phiBins)[phiBin]);
+      fTowerEta = 0.5 * (fEtaBins[etaBin - 1] + fEtaBins[etaBin]);
+      fTowerPhi = 0.5 * ((*phiBins)[phiBin - 1] + (*phiBins)[phiBin]);
 
       fTowerEdges[0] = fEtaBins[etaBin - 1];
       fTowerEdges[1] = fEtaBins[etaBin];
@@ -334,7 +329,9 @@ void SimpleCalorimeter::Process()
       fTowerEdges[3] = (*phiBins)[phiBin];
 
       fTowerEnergy = 0.0;
+
       fTrackEnergy = 0.0;
+      fTrackSigma = 0.0;
 
       fTowerTime = 0.0;
       fTrackTime = 0.0;
@@ -352,18 +349,34 @@ void SimpleCalorimeter::Process()
     {
       ++fTowerTrackHits;
 
-      track = static_cast<Candidate*>(fTrackInputArray->At(number));
+      track = static_cast<Candidate *>(fTrackInputArray->At(number));
       momentum = track->Momentum;
       position = track->Position;
 
       energy = momentum.E() * fTrackFractions[number];
 
-      fTrackEnergy += energy;
-
-      fTrackTime += TMath::Sqrt(energy)*position.T();
+      fTrackTime += TMath::Sqrt(energy) * position.T();
       fTrackTimeWeight += TMath::Sqrt(energy);
 
-      fTowerTrackArray->Add(track);
+      if(fTrackFractions[number] > 1.0E-9)
+      {
+
+        // compute total charged energy
+        fTrackEnergy += energy;
+        sigma = fResolutionFormula->Eval(0.0, fTowerEta, 0.0, momentum.E());
+        if(sigma / momentum.E() < track->TrackResolution)
+          energyGuess = energy;
+        else
+          energyGuess = momentum.E();
+
+        fTrackSigma += ((track->TrackResolution) * energyGuess) * ((track->TrackResolution) * energyGuess);
+        fTowerTrackArray->Add(track);
+      }
+
+      else
+      {
+        fEFlowTrackOutputArray->Add(track);
+      }
 
       continue;
     }
@@ -371,7 +384,7 @@ void SimpleCalorimeter::Process()
     // check for photon and electron hits in current tower
     if(flags & 2) ++fTowerPhotonHits;
 
-    particle = static_cast<Candidate*>(fParticleInputArray->At(number));
+    particle = static_cast<Candidate *>(fParticleInputArray->At(number));
     momentum = particle->Momentum;
     position = particle->Position;
 
@@ -380,8 +393,8 @@ void SimpleCalorimeter::Process()
 
     fTowerEnergy += energy;
 
-    fTowerTime += TMath::Sqrt(energy)*position.T();
-    fTowerTimeWeight += TMath::Sqrt(energy);
+    fTowerTime += energy * position.T();
+    fTowerTimeWeight += energy;
 
     fTower->AddCandidate(particle);
   }
@@ -394,10 +407,15 @@ void SimpleCalorimeter::Process()
 
 void SimpleCalorimeter::FinalizeTower()
 {
-  Candidate *tower;
-  Double_t energy, pt, eta, phi;
-  Double_t sigma;
+  Candidate *tower, *track, *mother;
+  Double_t energy, neutralEnergy, pt, eta, phi;
+  Double_t sigma, neutralSigma;
   Double_t time;
+
+  Double_t weightTrack, weightCalo, bestEnergyEstimate, rescaleFactor;
+
+  TLorentzVector momentum;
+  TFractionMap::iterator itFractionMap;
 
   if(!fTower) return;
 
@@ -405,11 +423,11 @@ void SimpleCalorimeter::FinalizeTower()
 
   energy = LogNormal(fTowerEnergy, sigma);
 
-  time = (fTowerTimeWeight < 1.0E-09 ) ? 0.0 : fTowerTime/fTowerTimeWeight;
+  time = (fTowerTimeWeight < 1.0E-09) ? 0.0 : fTowerTime / fTowerTimeWeight;
 
   sigma = fResolutionFormula->Eval(0.0, fTowerEta, 0.0, energy);
 
-  if(energy < fEnergyMin || energy < fEnergySignificanceMin*sigma) energy = 0.0;
+  if(energy < fEnergyMin || energy < fEnergySignificanceMin * sigma) energy = 0.0;
 
   if(fSmearTowerCenter)
   {
@@ -428,7 +446,7 @@ void SimpleCalorimeter::FinalizeTower()
   fTower->Momentum.SetPtEtaPhiE(pt, eta, phi, energy);
 
   fTower->Eem = (!fIsEcal) ? 0 : energy;
-  fTower->Ehad = (fIsEcal) ? 0 : energy; 
+  fTower->Ehad = (fIsEcal) ? 0 : energy;
 
   fTower->Edges[0] = fTowerEdges[0];
   fTower->Edges[1] = fTowerEdges[1];
@@ -438,25 +456,61 @@ void SimpleCalorimeter::FinalizeTower()
   // fill SimpleCalorimeter towers
   if(energy > 0.0) fTowerOutputArray->Add(fTower);
 
-  // fill energy flow candidates
-  energy -= fTrackEnergy;
+  // e-flow candidates
 
-  sigma = fResolutionFormula->Eval(0.0, fTowerEta, 0.0, energy);
+  //compute neutral excess
 
-  if(energy < fEnergyMin || energy < fEnergySignificanceMin*sigma) energy = 0.0;
+  fTrackSigma = TMath::Sqrt(fTrackSigma);
+  neutralEnergy = max((energy - fTrackEnergy), 0.0);
 
-  // save energy excess as an energy flow tower
-  if(energy > 0.0)
+  //compute sigma_trk total
+  neutralSigma = neutralEnergy / TMath::Sqrt(fTrackSigma * fTrackSigma + sigma * sigma);
+
+  // if neutral excess is significant, simply create neutral Eflow tower and clone each track into eflowtrack
+  if(neutralEnergy > fEnergyMin && neutralSigma > fEnergySignificanceMin)
   {
     // create new photon tower
-    tower = static_cast<Candidate*>(fTower->Clone());
-    pt = energy / TMath::CosH(eta);
+    tower = static_cast<Candidate *>(fTower->Clone());
+    pt = neutralEnergy / TMath::CosH(eta);
 
-    tower->Eem = (!fIsEcal) ? 0 : energy;
-    tower->Ehad = (fIsEcal) ? 0 : energy; 
+    tower->Eem = (!fIsEcal) ? 0 : neutralEnergy;
+    tower->Ehad = (fIsEcal) ? 0 : neutralEnergy;
+    tower->PID = (fIsEcal) ? 22 : 0;
 
-    tower->Momentum.SetPtEtaPhiE(pt, eta, phi, energy);
+    tower->Momentum.SetPtEtaPhiE(pt, eta, phi, neutralEnergy);
     fEFlowTowerOutputArray->Add(tower);
+
+    fItTowerTrackArray->Reset();
+    while((track = static_cast<Candidate *>(fItTowerTrackArray->Next())))
+    {
+      mother = track;
+      track = static_cast<Candidate *>(track->Clone());
+      track->AddCandidate(mother);
+
+      fEFlowTrackOutputArray->Add(track);
+    }
+  }
+
+  // if neutral excess is not significant, rescale eflow tracks, such that the total charged equals the best measurement given by the calorimeter and tracking
+  else if(fTrackEnergy > 0.0)
+  {
+    weightTrack = (fTrackSigma > 0.0) ? 1 / (fTrackSigma * fTrackSigma) : 0.0;
+    weightCalo = (sigma > 0.0) ? 1 / (sigma * sigma) : 0.0;
+
+    bestEnergyEstimate = (weightTrack * fTrackEnergy + weightCalo * energy) / (weightTrack + weightCalo);
+    rescaleFactor = bestEnergyEstimate / fTrackEnergy;
+
+    fItTowerTrackArray->Reset();
+    while((track = static_cast<Candidate *>(fItTowerTrackArray->Next())))
+    {
+      mother = track;
+      track = static_cast<Candidate *>(track->Clone());
+      track->AddCandidate(mother);
+
+      track->Momentum *= rescaleFactor;
+
+      fEFlowTrackOutputArray->Add(track);
+    }
   }
 }
 
@@ -468,10 +522,10 @@ Double_t SimpleCalorimeter::LogNormal(Double_t mean, Double_t sigma)
 
   if(mean > 0.0)
   {
-    b = TMath::Sqrt(TMath::Log((1.0 + (sigma*sigma)/(mean*mean))));
-    a = TMath::Log(mean) - 0.5*b*b;
+    b = TMath::Sqrt(TMath::Log((1.0 + (sigma * sigma) / (mean * mean))));
+    a = TMath::Log(mean) - 0.5 * b * b;
 
-    return TMath::Exp(a + b*gRandom->Gaus(0.0, 1.0));
+    return TMath::Exp(a + b * gRandom->Gaus(0.0, 1.0));
   }
   else
   {

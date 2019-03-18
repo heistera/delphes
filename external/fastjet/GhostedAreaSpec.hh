@@ -1,7 +1,7 @@
 //FJSTARTHEADER
-// $Id: GhostedAreaSpec.hh 3433 2014-07-23 08:17:03Z salam $
+// $Id: GhostedAreaSpec.hh 4354 2018-04-22 07:12:37Z salam $
 //
-// Copyright (c) 2005-2014, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+// Copyright (c) 2005-2018, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
 //
 //----------------------------------------------------------------------
 // This file is part of FastJet.
@@ -38,6 +38,7 @@
 #include "fastjet/internal/BasicRandom.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/LimitedWarning.hh"
+#include "fastjet/internal/deprecated.hh"
 
 // 
 #define STATIC_GENERATOR 1
@@ -172,6 +173,7 @@ public:
   ///   sqrt(area)/(2*maxrap).
   ///
   /// FJ2 placement is now deprecated.
+  FASTJET_DEPRECATED_MSG("This is deprecated since we strongly recomment to use the new ghost placement instead")
   void set_fj2_placement(bool  val);
 
   /// return nphi (ghosts layed out (-nrap, 0..nphi-1), (-nrap+1,0..nphi-1),

@@ -1,8 +1,8 @@
 
 //FJSTARTHEADER
-// $Id: base.hh 3433 2014-07-23 08:17:03Z salam $
+// $Id: base.hh 4354 2018-04-22 07:12:37Z salam $
 //
-// Copyright (c) 2005-2014, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+// Copyright (c) 2005-2018, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
 //
 //----------------------------------------------------------------------
 // This file is part of FastJet.
@@ -32,6 +32,8 @@
 #ifndef __FASTJET_FASTJET_BASE_HH__
 #define __FASTJET_FASTJET_BASE_HH__
 
+#include "fastjet/config.h"
+
 /// \namespace fastjet
 /// the FastJet namespace
 /// 
@@ -41,5 +43,13 @@
 // a range of places
 #define FASTJET_BEGIN_NAMESPACE namespace fastjet {
 #define FASTJET_END_NAMESPACE   }
+
+// define a macro to mark virtual function in derived classes as
+// overriding the base-class definition
+#ifdef FASTJET_HAVE_OVERRIDE
+#define FASTJET_OVERRIDE  override
+#else
+#define FASTJET_OVERRIDE  
+#endif
 
 #endif // __FASTJET_FASTJET_BASE_HH__

@@ -3,13 +3,13 @@ Quick start with Delphes
 
 Commands to get the code:
 
-   wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.2.0.tar.gz
+   wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.4.2.tar.gz
 
-   tar -zxf Delphes-3.2.0.tar.gz
+   tar -zxf Delphes-3.4.2.tar.gz
 
 Commands to compile the code:
 
-   cd Delphes-3.2.0
+   cd Delphes-3.4.2
 
    make
 
@@ -39,6 +39,19 @@ For more detailed documentation, please visit
 
 https://cp3.irmp.ucl.ac.be/projects/delphes/wiki/WorkBook
 
+Configure Delphes on lxplus.cern.ch
+====================================
+
+git clone git://github.com/delphes/delphes.git Delphes
+
+cd Delphes
+
+source  /afs/cern.ch/sw/lcg/external/gcc/4.9.3/x86_64-slc6/setup.sh
+
+source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.06.00/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
+
+make 
+
 
 Simple analysis using TTree::Draw
 =================================
@@ -67,7 +80,6 @@ Complete description of all branches can be found in
 This information is also available at
 
    https://cp3.irmp.ucl.ac.be/projects/delphes/wiki/WorkBook/RootTreeDescription
-
 
 Macro-based analysis
 ====================

@@ -36,13 +36,9 @@
 class TObjArray;
 class DelphesFormula;
 
-class ExRootFilter;
-class BTaggingPartonClassifier;
-
 class BTagging: public DelphesModule
 {
 public:
-
   BTagging();
   ~BTagging();
 
@@ -51,25 +47,14 @@ public:
   void Finish();
 
 private:
-
   Int_t fBitNumber;
 
-  Double_t fDeltaR;
-
 #if !defined(__CINT__) && !defined(__CLING__)
-  std::map< Int_t, DelphesFormula * > fEfficiencyMap; //!
+  std::map<Int_t, DelphesFormula *> fEfficiencyMap; //!
 #endif
 
-  BTaggingPartonClassifier *fClassifier; //!
-  
-  ExRootFilter *fFilter;
-
-  TIterator *fItPartonInputArray; //!
-  
   TIterator *fItJetInputArray; //!
 
-  const TObjArray *fPartonInputArray; //!
-  
   const TObjArray *fJetInputArray; //!
 
   ClassDef(BTagging, 1)

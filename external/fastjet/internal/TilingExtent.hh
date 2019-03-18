@@ -4,9 +4,9 @@
 #include "fastjet/ClusterSequence.hh"
 
 //FJSTARTHEADER
-// $Id: TilingExtent.hh 3433 2014-07-23 08:17:03Z salam $
+// $Id: TilingExtent.hh 4354 2018-04-22 07:12:37Z salam $
 //
-// Copyright (c) 2005-2014, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+// Copyright (c) 2005-2018, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
 //
 //----------------------------------------------------------------------
 // This file is part of FastJet.
@@ -44,6 +44,9 @@ public:
   /// initial particles have been set up, but before clustering has
   /// started.
   TilingExtent(ClusterSequence & cs);
+
+  /// constructor that takes a list of PseudoJets
+  TilingExtent(const std::vector<PseudoJet> &particles);
 
   /// returns the suggested minimum rapidity for the tiling
   double minrap() const {return _minrap;}

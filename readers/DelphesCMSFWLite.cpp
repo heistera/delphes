@@ -17,44 +17,44 @@
  */
 
 #include <algorithm>
-#include <stdexcept>
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
+#include <stdexcept>
 
 #include <map>
 #include <vector>
 
-#include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "TROOT.h"
 #include "TApplication.h"
+#include "TROOT.h"
 
-#include "TFile.h"
-#include "TObjArray.h"
-#include "TStopwatch.h"
 #include "TDatabasePDG.h"
-#include "TParticlePDG.h"
+#include "TFile.h"
 #include "TLorentzVector.h"
+#include "TObjArray.h"
+#include "TParticlePDG.h"
+#include "TStopwatch.h"
 
-#include "modules/Delphes.h"
-#include "classes/DelphesStream.h"
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
+#include "classes/DelphesStream.h"
+#include "modules/Delphes.h"
 
-#include "ExRootAnalysis/ExRootTreeWriter.h"
-#include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "ExRootAnalysis/ExRootProgressBar.h"
-
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "ExRootAnalysis/ExRootTreeBranch.h"
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/FWLite/interface/Handle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/WeightsInfo.h"
 
@@ -63,23 +63,54 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
-  ExRootTreeBranch *branchEvent, ExRootTreeBranch *branchRwgt,
+  ExRootTreeBranch *branchEvent, ExRootTreeBranch *branchWeight,
   DelphesFactory *factory, TObjArray *allParticleOutputArray,
-  TObjArray *stableParticleOutputArray, TObjArray *partonOutputArray)
+  TObjArray *stableParticleOutputArray, TObjArray *partonOutputArray, Bool_t firstEvent)
 {
-  fwlite::Handle< GenEventInfoProduct > handleGenEventInfo;
 
-  fwlite::Handle< LHEEventProduct > handleLHEEvent;
+  fwlite::Handle<GenEventInfoProduct> handleGenEventInfo;
+  fwlite::Handle<LHEEventProduct> handleLHEEvent;
+  fwlite::Handle<vector<reco::GenParticle> > handleParticle;
+  fwlite::Handle<vector<pat::PackedGenParticle> > handlePackedParticle;
 
-  fwlite::Handle< vector< reco::GenParticle > > handleParticle;
-  vector< reco::GenParticle >::const_iterator itParticle;
+  vector<reco::GenParticle>::const_iterator itParticle;
+  vector<pat::PackedGenParticle>::const_iterator itPackedParticle;
 
-  vector< const reco::Candidate * > vectorCandidate;
-  vector< const reco::Candidate * >::iterator itCandidate;
+  vector<const reco::Candidate *> vectorCandidate;
+  vector<const reco::Candidate *>::iterator itCandidate;
 
   handleGenEventInfo.getByLabel(event, "generator");
-  handleLHEEvent.getByLabel(event, "source");
-  handleParticle.getByLabel(event, "genParticles");
+
+  if(!((handleLHEEvent.getBranchNameFor(event, "source")).empty()))
+  {
+    handleLHEEvent.getByLabel(event, "source");
+  }
+  else if(!((handleLHEEvent.getBranchNameFor(event, "externalLHEProducer")).empty()))
+  {
+    handleLHEEvent.getByLabel(event, "externalLHEProducer");
+  }
+  else if(firstEvent)
+  {
+    cout << "Wrong LHEEvent Label! Please, check the input file." << endl;
+  }
+
+  if(!((handleParticle.getBranchNameFor(event, "genParticles")).empty()))
+  {
+    handleParticle.getByLabel(event, "genParticles");
+  }
+  else if(!((handlePackedParticle.getBranchNameFor(event, "packedGenParticles")).empty()) && !((handleParticle.getBranchNameFor(event, "prunedGenParticles")).empty()))
+  {
+    handleParticle.getByLabel(event, "prunedGenParticles");
+    handlePackedParticle.getByLabel(event, "packedGenParticles");
+  }
+  else
+  {
+    std::cout << "Wrong GenParticle Label! Please, check the input file." << std::endl;
+    exit(-1);
+  }
+
+  Bool_t foundLHE = !((handleLHEEvent.getBranchNameFor(event, "source")).empty()) || !((handleLHEEvent.getBranchNameFor(event, "externalLHEProducer")).empty());
+  Bool_t isMiniAOD = !((handlePackedParticle.getBranchNameFor(event, "packedGenParticles")).empty()) && ((handleParticle.getBranchNameFor(event, "genParticles")).empty());
 
   HepMCEvent *element;
   Weight *weight;
@@ -91,9 +122,6 @@ void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
   Int_t pid, status;
   Double_t px, py, pz, e, mass;
   Double_t x, y, z;
-
-  const vector< gen::WeightsInfo > &vectorWeightsInfo = handleLHEEvent->weights();
-  vector< gen::WeightsInfo >::const_iterator itWeightsInfo;
 
   element = static_cast<HepMCEvent *>(branchEvent->NewEntry());
 
@@ -117,17 +145,24 @@ void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
   element->ReadTime = 0.0;
   element->ProcTime = 0.0;
 
-  for(itWeightsInfo = vectorWeightsInfo.begin(); itWeightsInfo != vectorWeightsInfo.end(); ++itWeightsInfo)
+  if(foundLHE)
   {
-    weight = static_cast<Weight *>(branchRwgt->NewEntry());
-    weight->Weight = itWeightsInfo->wgt;
+    const vector<gen::WeightsInfo> &vectorWeightsInfo = handleLHEEvent->weights();
+    vector<gen::WeightsInfo>::const_iterator itWeightsInfo;
+
+    for(itWeightsInfo = vectorWeightsInfo.begin(); itWeightsInfo != vectorWeightsInfo.end(); ++itWeightsInfo)
+    {
+      weight = static_cast<Weight *>(branchWeight->NewEntry());
+      weight->Weight = itWeightsInfo->wgt;
+    }
   }
 
   pdg = TDatabasePDG::Instance();
 
   for(itParticle = handleParticle->begin(); itParticle != handleParticle->end(); ++itParticle)
   {
-    vectorCandidate.push_back(&*itParticle);
+    const reco::GenParticle &particle = *itParticle;
+    if(!isMiniAOD || particle.status() != 1) vectorCandidate.push_back(&*itParticle);
   }
 
   for(itParticle = handleParticle->begin(); itParticle != handleParticle->end(); ++itParticle)
@@ -136,8 +171,15 @@ void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
 
     pid = particle.pdgId();
     status = particle.status();
-    px = particle.px(); py = particle.py(); pz = particle.pz(); e = particle.energy(); mass = particle.mass();
-    x = particle.vx(); y = particle.vy(); z = particle.vz();
+    if(isMiniAOD && particle.status() == 1) continue;
+    px = particle.px();
+    py = particle.py();
+    pz = particle.pz();
+    e = particle.energy();
+    mass = particle.mass();
+    x = particle.vx();
+    y = particle.vy();
+    z = particle.vz();
 
     candidate = factory->NewCandidate();
 
@@ -159,12 +201,77 @@ void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
     if(itCandidate != vectorCandidate.end()) candidate->D2 = distance(vectorCandidate.begin(), itCandidate);
 
     pdgParticle = pdg->GetParticle(pid);
-    candidate->Charge = pdgParticle ? Int_t(pdgParticle->Charge()/3.0) : -999;
+    candidate->Charge = pdgParticle ? Int_t(pdgParticle->Charge() / 3.0) : -999;
     candidate->Mass = mass;
 
     candidate->Momentum.SetPxPyPzE(px, py, pz, e);
 
-    candidate->Position.SetXYZT(x, y, z, 0.0);
+    candidate->Position.SetXYZT(x * 10.0, y * 10.0, z * 10.0, 0.0);
+
+    allParticleOutputArray->Add(candidate);
+
+    if(!pdgParticle) continue;
+
+    if(status == 1)
+    {
+      // Prevent duplicated particle.
+      if(!isMiniAOD) stableParticleOutputArray->Add(candidate);
+    }
+    else if(pdgCode <= 5 || pdgCode == 21 || pdgCode == 15)
+    {
+      partonOutputArray->Add(candidate);
+    }
+  }
+
+  if(!isMiniAOD) return;
+  // For MiniAOD sample,
+  // Only status==1 particles are saved to packedGenParticles.
+  for(itPackedParticle = handlePackedParticle->begin(); itPackedParticle != handlePackedParticle->end(); ++itPackedParticle)
+  {
+    vectorCandidate.push_back(&*itPackedParticle);
+  }
+
+  for(itPackedParticle = handlePackedParticle->begin(); itPackedParticle != handlePackedParticle->end(); ++itPackedParticle)
+  {
+    const pat::PackedGenParticle &particle = *itPackedParticle;
+
+    pid = particle.pdgId();
+    status = particle.status();
+    px = particle.px();
+    py = particle.py();
+    pz = particle.pz();
+    e = particle.energy();
+    mass = particle.mass();
+    x = particle.vx();
+    y = particle.vy();
+    z = particle.vz();
+
+    candidate = factory->NewCandidate();
+
+    candidate->PID = pid;
+    pdgCode = TMath::Abs(candidate->PID);
+
+    candidate->Status = status;
+
+    if(particle.mother(0))
+    {
+      itCandidate = find(vectorCandidate.begin(), vectorCandidate.end(), particle.mother(0));
+      if(itCandidate != vectorCandidate.end()) candidate->M1 = distance(vectorCandidate.begin(), itCandidate);
+    }
+
+    itCandidate = find(vectorCandidate.begin(), vectorCandidate.end(), particle.daughter(0));
+    if(itCandidate != vectorCandidate.end()) candidate->D1 = distance(vectorCandidate.begin(), itCandidate);
+
+    itCandidate = find(vectorCandidate.begin(), vectorCandidate.end(), particle.daughter(particle.numberOfDaughters() - 1));
+    if(itCandidate != vectorCandidate.end()) candidate->D2 = distance(vectorCandidate.begin(), itCandidate);
+
+    pdgParticle = pdg->GetParticle(pid);
+    candidate->Charge = pdgParticle ? Int_t(pdgParticle->Charge() / 3.0) : -999;
+    candidate->Mass = mass;
+
+    candidate->Momentum.SetPxPyPzE(px, py, pz, e);
+
+    candidate->Position.SetXYZT(x * 10.0, y * 10.0, z * 10.0, 0.0);
 
     allParticleOutputArray->Add(candidate);
 
@@ -173,10 +280,6 @@ void ConvertInput(fwlite::Event &event, Long64_t eventCounter,
     if(status == 1)
     {
       stableParticleOutputArray->Add(candidate);
-    }
-    else if(pdgCode <= 5 || pdgCode == 21 || pdgCode == 15)
-    {
-      partonOutputArray->Add(candidate);
     }
   }
 }
@@ -200,17 +303,20 @@ int main(int argc, char *argv[])
   TFile *outputFile = 0;
   TStopwatch eventStopWatch;
   ExRootTreeWriter *treeWriter = 0;
-  ExRootTreeBranch *branchEvent = 0, *branchRwgt = 0;
+  ExRootTreeBranch *branchEvent = 0, *branchWeight = 0;
   ExRootConfReader *confReader = 0;
   Delphes *modularDelphes = 0;
   DelphesFactory *factory = 0;
   TObjArray *allParticleOutputArray = 0, *stableParticleOutputArray = 0, *partonOutputArray = 0;
   Int_t i;
   Long64_t eventCounter, numberOfEvents;
+  Bool_t firstEvent = kTRUE;
 
   if(argc < 4)
   {
-    cout << " Usage: " << appName << " config_file" << " output_file" << " input_file(s)" << endl;
+    cout << " Usage: " << appName << " config_file"
+         << " output_file"
+         << " input_file(s)" << endl;
     cout << " config_file - configuration file in Tcl format," << endl;
     cout << " output_file - output file in ROOT format," << endl;
     cout << " input_file(s) - input file(s) in ROOT format." << endl;
@@ -225,7 +331,7 @@ int main(int argc, char *argv[])
   char *appargv[] = {appName};
   TApplication app(appName, &appargc, appargv);
 
-  AutoLibraryLoader::enable();
+  FWLiteEnabler::enable();
 
   try
   {
@@ -240,7 +346,7 @@ int main(int argc, char *argv[])
     treeWriter = new ExRootTreeWriter(outputFile, "Delphes");
 
     branchEvent = treeWriter->NewBranch("Event", HepMCEvent::Class());
-    branchRwgt = treeWriter->NewBranch("Rwgt", Weight::Class());
+    branchWeight = treeWriter->NewBranch("Weight", Weight::Class());
 
     confReader = new ExRootConfReader;
     confReader->ReadFile(argv[1]);
@@ -281,11 +387,14 @@ int main(int argc, char *argv[])
       eventCounter = 0;
       modularDelphes->Clear();
       treeWriter->Clear();
+
       for(event.toBegin(); !event.atEnd() && !interrupted; ++event)
       {
-        ConvertInput(event, eventCounter, branchEvent, branchRwgt, factory,
-          allParticleOutputArray, stableParticleOutputArray, partonOutputArray);
+        ConvertInput(event, eventCounter, branchEvent, branchWeight, factory,
+          allParticleOutputArray, stableParticleOutputArray, partonOutputArray, firstEvent);
         modularDelphes->ProcessTask();
+
+        firstEvent = kFALSE;
 
         treeWriter->Fill();
 

@@ -1,11 +1,37 @@
+<<<<<<< HEAD
 DelphesHepMC
 DelphesLHEF
 DelphesSTDHEP
 Example1
 lhco2root
+=======
+*~
+*.swp
+*.swo
+*bk
+CaloGrid
+ClassesDict_rdict.pcm
+DelphesHepMC
+DelphesLHEF
+DelphesROOT
+DelphesSTDHEP
+DelphesValidation
+ExRootAnalysisDict_rdict.pcm
+Example1
+FastJetDict_rdict.pcm
+ModulesDict_rdict.pcm
+hepmc2pileup
+lhco2root
+libDelphes.so
+libDelphesNoFastJet.so
+>>>>>>> upstream/master
 pileup2root
 root2lhco
 root2pileup
 stdhep2pileup
+<<<<<<< HEAD
 hepmc2pileup
 DelphesPythia8
+=======
+tmp
+>>>>>>> upstream/master
