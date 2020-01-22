@@ -40,6 +40,7 @@
 #include "modules/SimpleCalorimeter.h"
 #include "modules/DenseTrackFilter.h"
 #include "modules/Calorimeter.h"
+#include "modules/DualReadoutCalorimeter.h"
 #include "modules/OldCalorimeter.h"
 #include "modules/Isolation.h"
 #include "modules/EnergyScale.h"
@@ -70,6 +71,7 @@
 #include "modules/VertexSorter.h"
 #include "modules/VertexFinder.h"
 #include "modules/VertexFinderDA4D.h"
+#include "modules/DecayFilter.h"
 #include "modules/ExampleModule.h"
 
 #ifdef __CINT__
@@ -93,6 +95,7 @@
 #pragma link C++ class SimpleCalorimeter+;
 #pragma link C++ class DenseTrackFilter+;
 #pragma link C++ class Calorimeter+;
+#pragma link C++ class DualReadoutCalorimeter+;
 #pragma link C++ class OldCalorimeter+;
 #pragma link C++ class Isolation+;
 #pragma link C++ class EnergyScale+;
@@ -123,6 +126,7 @@
 #pragma link C++ class VertexSorter+;
 #pragma link C++ class VertexFinder+;
 #pragma link C++ class VertexFinderDA4D+;
+#pragma link C++ class DecayFilter+;
 #pragma link C++ class ExampleModule+;
 
 #endif
