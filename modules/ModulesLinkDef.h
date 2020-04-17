@@ -35,6 +35,7 @@
 #include "modules/EnergySmearing.h"
 #include "modules/MomentumSmearing.h"
 #include "modules/TrackSmearing.h"
+#include "modules/TrackCovariance.h"
 #include "modules/ImpactParameterSmearing.h"
 #include "modules/TimeSmearing.h"
 #include "modules/SimpleCalorimeter.h"
@@ -72,6 +73,7 @@
 #include "modules/VertexFinder.h"
 #include "modules/VertexFinderDA4D.h"
 #include "modules/DecayFilter.h"
+#include "modules/ParticleDensity.h"
 #include "modules/ExampleModule.h"
 
 #ifdef __CINT__
@@ -90,6 +92,7 @@
 #pragma link C++ class EnergySmearing+;
 #pragma link C++ class MomentumSmearing+;
 #pragma link C++ class TrackSmearing+;
+#pragma link C++ class TrackCovariance+;
 #pragma link C++ class ImpactParameterSmearing+;
 #pragma link C++ class TimeSmearing+;
 #pragma link C++ class SimpleCalorimeter+;
@@ -127,6 +130,7 @@
 #pragma link C++ class VertexFinder+;
 #pragma link C++ class VertexFinderDA4D+;
 #pragma link C++ class DecayFilter+;
+#pragma link C++ class ParticleDensity+;
 #pragma link C++ class ExampleModule+;
 
 #endif

@@ -414,6 +414,7 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/EnergySmearing.h \
 	modules/MomentumSmearing.h \
 	modules/TrackSmearing.h \
+	modules/TrackCovariance.h \
 	modules/ImpactParameterSmearing.h \
 	modules/TimeSmearing.h \
 	modules/SimpleCalorimeter.h \
@@ -451,6 +452,7 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/VertexFinder.h \
 	modules/VertexFinderDA4D.h \
 	modules/DecayFilter.h \
+	modules/ParticleDensity.h \
 	modules/ExampleModule.h
 tmp/modules/ModulesDict$(PcmSuf): \
 	tmp/modules/ModulesDict.$(SrcSuf)
@@ -515,7 +517,8 @@ tmp/classes/DelphesFactory.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootTreeBranch.h
 tmp/classes/DelphesFormula.$(ObjSuf): \
 	classes/DelphesFormula.$(SrcSuf) \
-	classes/DelphesFormula.h
+	classes/DelphesFormula.h \
+	classes/DelphesClasses.h
 tmp/classes/DelphesHepMCReader.$(ObjSuf): \
 	classes/DelphesHepMCReader.$(SrcSuf) \
 	classes/DelphesHepMCReader.h \
@@ -651,6 +654,14 @@ tmp/external/Hector/H_VerticalKicker.$(ObjSuf): \
 	external/Hector/H_VerticalKicker.$(SrcSuf)
 tmp/external/Hector/H_VerticalQuadrupole.$(ObjSuf): \
 	external/Hector/H_VerticalQuadrupole.$(SrcSuf)
+tmp/external/TrackCovariance/ObsTrk.$(ObjSuf): \
+	external/TrackCovariance/ObsTrk.$(SrcSuf)
+tmp/external/TrackCovariance/SolGeom.$(ObjSuf): \
+	external/TrackCovariance/SolGeom.$(SrcSuf)
+tmp/external/TrackCovariance/SolGridCov.$(ObjSuf): \
+	external/TrackCovariance/SolGridCov.$(SrcSuf)
+tmp/external/TrackCovariance/SolTrack.$(ObjSuf): \
+	external/TrackCovariance/SolTrack.$(SrcSuf)
 tmp/modules/AngularSmearing.$(ObjSuf): \
 	modules/AngularSmearing.$(SrcSuf) \
 	modules/AngularSmearing.h \
@@ -878,6 +889,15 @@ tmp/modules/OldCalorimeter.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/ParticleDensity.$(ObjSuf): \
+	modules/ParticleDensity.$(SrcSuf) \
+	modules/ParticleDensity.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/ParticlePropagator.$(ObjSuf): \
 	modules/ParticlePropagator.$(SrcSuf) \
 	modules/ParticlePropagator.h \
@@ -1010,6 +1030,13 @@ tmp/modules/TrackCountingTauTagging.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/TrackCovariance.$(ObjSuf): \
+	modules/TrackCovariance.$(SrcSuf) \
+	modules/TrackCovariance.h \
+	classes/DelphesClasses.h \
+	external/TrackCovariance/SolGeom.h \
+	external/TrackCovariance/SolGridCov.h \
+	external/TrackCovariance/ObsTrk.h
 tmp/modules/TrackPileUpSubtractor.$(ObjSuf): \
 	modules/TrackPileUpSubtractor.$(SrcSuf) \
 	modules/TrackPileUpSubtractor.h \
@@ -1137,6 +1164,10 @@ DELPHES_OBJ +=  \
 	tmp/external/Hector/H_TransportMatrices.$(ObjSuf) \
 	tmp/external/Hector/H_VerticalKicker.$(ObjSuf) \
 	tmp/external/Hector/H_VerticalQuadrupole.$(ObjSuf) \
+	tmp/external/TrackCovariance/ObsTrk.$(ObjSuf) \
+	tmp/external/TrackCovariance/SolGeom.$(ObjSuf) \
+	tmp/external/TrackCovariance/SolGridCov.$(ObjSuf) \
+	tmp/external/TrackCovariance/SolTrack.$(ObjSuf) \
 	tmp/modules/AngularSmearing.$(ObjSuf) \
 	tmp/modules/BTagging.$(ObjSuf) \
 	tmp/modules/BeamSpotFilter.$(ObjSuf) \
@@ -1162,6 +1193,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/Merger.$(ObjSuf) \
 	tmp/modules/MomentumSmearing.$(ObjSuf) \
 	tmp/modules/OldCalorimeter.$(ObjSuf) \
+	tmp/modules/ParticleDensity.$(ObjSuf) \
 	tmp/modules/ParticlePropagator.$(ObjSuf) \
 	tmp/modules/PdgCodeFilter.$(ObjSuf) \
 	tmp/modules/PhotonConversions.$(ObjSuf) \
@@ -1176,6 +1208,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/TimeSmearing.$(ObjSuf) \
 	tmp/modules/TrackCountingBTagging.$(ObjSuf) \
 	tmp/modules/TrackCountingTauTagging.$(ObjSuf) \
+	tmp/modules/TrackCovariance.$(ObjSuf) \
 	tmp/modules/TrackPileUpSubtractor.$(ObjSuf) \
 	tmp/modules/TrackSmearing.$(ObjSuf) \
 	tmp/modules/TreeWriter.$(ObjSuf) \
@@ -1889,6 +1922,10 @@ modules/IdentificationMap.h: \
 	classes/DelphesModule.h
 	@touch $@
 
+modules/TrackCovariance.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 modules/ExampleModule.h: \
 	classes/DelphesModule.h
 	@touch $@
@@ -2242,6 +2279,10 @@ external/fastjet/internal/Dnn3piCylinder.hh: \
 
 external/fastjet/AreaDefinition.hh: \
 	external/fastjet/GhostedAreaSpec.hh
+	@touch $@
+
+modules/ParticleDensity.h: \
+	classes/DelphesModule.h
 	@touch $@
 
 modules/TimeSmearing.h: \
