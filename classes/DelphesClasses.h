@@ -32,6 +32,7 @@
 // Dependencies (#includes)
 
 #include "TLorentzVector.h"
+#include "TMatrixDSym.h"
 #include "TObject.h"
 #include "TRef.h"
 #include "TRefArray.h"
@@ -149,12 +150,7 @@ public:
   Float_t PT; // particle transverse momentum
   Float_t Eta; // particle pseudorapidity
   Float_t Phi; // particle azimuthal angle
-
   Float_t Rapidity; // particle rapidity
-  Float_t CtgTheta; // particle cotangent of theta
-
-  Float_t D0; // particle transverse impact parameter
-  Float_t DZ; // particle longitudinal impact parameter
 
   Float_t T; // particle vertex position (t component) | hepevt.vhep[number][3]
   Float_t X; // particle vertex position (x component) | hepevt.vhep[number][0]
@@ -388,7 +384,7 @@ public:
   Int_t NNeutrals; // number of neutral constituents
 
   Float_t NeutralEnergyFraction;  // charged energy fraction
-  Float_t ChargedEnergyFraction;  // neutral energy fraction 
+  Float_t ChargedEnergyFraction;  // neutral energy fraction
 
   Float_t Beta; // (sum pt of charged pile-up constituents)/(sum pt of charged constituents)
   Float_t BetaStar; // (sum pt of charged constituents coming from hard interaction)/(sum pt of charged constituents)
@@ -441,6 +437,8 @@ public:
   Float_t Eta; // track pseudorapidity
   Float_t Phi; // track azimuthal angle
   Float_t CtgTheta; // track cotangent of theta
+  Float_t C; // track curvature inverse
+  Float_t Mass; // particle mass
 
   Float_t EtaOuter; // track pseudorapidity at the tracker edge
   Float_t PhiOuter; // track azimuthal angle at the tracker edge
@@ -471,6 +469,19 @@ public:
   Float_t ErrorT; // time measurement error
   Float_t ErrorD0; // track transverse impact parameter error
   Float_t ErrorDZ; // track longitudinal impact parameter error
+  Float_t ErrorC; // track curvature error
+
+  // track covariance off-diagonal terms
+  Float_t ErrorD0Phi;
+  Float_t ErrorD0C;
+  Float_t ErrorD0DZ;
+  Float_t ErrorD0CtgTheta;
+  Float_t ErrorPhiC;
+  Float_t ErrorPhiDZ;
+  Float_t ErrorPhiCtgTheta ;
+  Float_t ErrorCDZ;
+  Float_t ErrorCCtgTheta;
+  Float_t ErrorDZCtgTheta;
 
   TRef Particle; // reference to generated particle
 
@@ -480,6 +491,7 @@ public:
   const CompBase *GetCompare() const { return fgCompare; }
 
   TLorentzVector P4() const;
+  TMatrixDSym CovarianceMatrix() const;
 
   ClassDef(Track, 3)
 };
@@ -529,6 +541,8 @@ public:
   Float_t Eta; // track pseudorapidity
   Float_t Phi; // track azimuthal angle
   Float_t CtgTheta; // track cotangent of theta
+  Float_t C; // track curvature inverse
+  Float_t Mass; // particle mass
 
   Float_t EtaOuter; // track pseudorapidity at the tracker edge
   Float_t PhiOuter; // track azimuthal angle at the tracker edge
@@ -559,6 +573,19 @@ public:
   Float_t ErrorT; // time measurement error
   Float_t ErrorD0; // track transverse impact parameter error
   Float_t ErrorDZ; // track longitudinal impact parameter error
+  Float_t ErrorC; // track curvature error
+
+  // track covariance off-diagonal terms
+  Float_t ErrorD0Phi;
+  Float_t ErrorD0C;
+  Float_t ErrorD0DZ;
+  Float_t ErrorD0CtgTheta;
+  Float_t ErrorPhiC;
+  Float_t ErrorPhiDZ;
+  Float_t ErrorPhiCtgTheta ;
+  Float_t ErrorCDZ;
+  Float_t ErrorCCtgTheta;
+  Float_t ErrorDZCtgTheta;
 
   Int_t VertexIndex; // reference to vertex
 
@@ -566,6 +593,7 @@ public:
   const CompBase *GetCompare() const { return fgCompare; }
 
   TLorentzVector P4() const;
+  TMatrixDSym CovarianceMatrix() const;
 
   Int_t NTimeHits; // number of hits contributing to time measurement
 
@@ -576,7 +604,7 @@ public:
 
   TRefArray Particles; // references to generated particles
 
-  ClassDef(ParticleFlowCandidate, 1)
+  ClassDef(ParticleFlowCandidate, 2)
 
 };
 
@@ -649,11 +677,13 @@ public:
   TLorentzVector Momentum, Position, InitialPosition, PositionError, Area;
 
   Float_t L; // path length
+  Float_t DZ;
+  Float_t ErrorDZ;
   Float_t ErrorT; // path length
   Float_t D0;
   Float_t ErrorD0;
-  Float_t DZ;
-  Float_t ErrorDZ;
+  Float_t C;
+  Float_t ErrorC;
   Float_t P;
   Float_t ErrorP;
   Float_t PT;
@@ -681,7 +711,7 @@ public:
   Float_t PTD;
   Float_t FracPt[5];
   Float_t NeutralEnergyFraction;  // charged energy fraction
-  Float_t ChargedEnergyFraction;  // neutral energy fraction 
+  Float_t ChargedEnergyFraction;  // neutral energy fraction
 
 
   // Timing information
@@ -697,6 +727,10 @@ public:
   Float_t SumPtNeutral;
   Float_t SumPtChargedPU;
   Float_t SumPt;
+
+  // ACTS compliant 6x6 track covariance (D0, phi, Curvature, dz, ctg(theta))
+
+  TMatrixDSym TrackCovariance;
 
   // vertex variables
 
@@ -734,7 +768,7 @@ public:
 
   // event characteristics variables
   Double_t ParticleDensity; // particle multiplicity density in the proximity of the particle
-  
+
   static CompBase *fgCompare; //!
   const CompBase *GetCompare() const { return fgCompare; }
 

@@ -95,7 +95,7 @@ DELPHESLIB = libDelphes.lib
 DISPLAY = libDelphesDisplay.$(DllSuf)
 DISPLAYLIB = libDelphesDisplay.lib
 
-VERSION = $(shell cat VERSION)
+VERSION = x.y.z
 DISTDIR = Delphes-$(VERSION)
 DISTTAR = $(DISTDIR).tar.gz
 
@@ -654,6 +654,8 @@ tmp/external/Hector/H_VerticalKicker.$(ObjSuf): \
 	external/Hector/H_VerticalKicker.$(SrcSuf)
 tmp/external/Hector/H_VerticalQuadrupole.$(ObjSuf): \
 	external/Hector/H_VerticalQuadrupole.$(SrcSuf)
+tmp/external/TrackCovariance/AcceptanceClx.$(ObjSuf): \
+	external/TrackCovariance/AcceptanceClx.$(SrcSuf)
 tmp/external/TrackCovariance/ObsTrk.$(ObjSuf): \
 	external/TrackCovariance/ObsTrk.$(SrcSuf)
 tmp/external/TrackCovariance/SolGeom.$(ObjSuf): \
@@ -662,6 +664,10 @@ tmp/external/TrackCovariance/SolGridCov.$(ObjSuf): \
 	external/TrackCovariance/SolGridCov.$(SrcSuf)
 tmp/external/TrackCovariance/SolTrack.$(ObjSuf): \
 	external/TrackCovariance/SolTrack.$(SrcSuf)
+tmp/external/TrackCovariance/TrkUtil.$(ObjSuf): \
+	external/TrackCovariance/TrkUtil.$(SrcSuf)
+tmp/external/TrackCovariance/VertexFit.$(ObjSuf): \
+	external/TrackCovariance/VertexFit.$(SrcSuf)
 tmp/modules/AngularSmearing.$(ObjSuf): \
 	modules/AngularSmearing.$(SrcSuf) \
 	modules/AngularSmearing.h \
@@ -1164,10 +1170,13 @@ DELPHES_OBJ +=  \
 	tmp/external/Hector/H_TransportMatrices.$(ObjSuf) \
 	tmp/external/Hector/H_VerticalKicker.$(ObjSuf) \
 	tmp/external/Hector/H_VerticalQuadrupole.$(ObjSuf) \
+	tmp/external/TrackCovariance/AcceptanceClx.$(ObjSuf) \
 	tmp/external/TrackCovariance/ObsTrk.$(ObjSuf) \
 	tmp/external/TrackCovariance/SolGeom.$(ObjSuf) \
 	tmp/external/TrackCovariance/SolGridCov.$(ObjSuf) \
 	tmp/external/TrackCovariance/SolTrack.$(ObjSuf) \
+	tmp/external/TrackCovariance/TrkUtil.$(ObjSuf) \
+	tmp/external/TrackCovariance/VertexFit.$(ObjSuf) \
 	tmp/modules/AngularSmearing.$(ObjSuf) \
 	tmp/modules/BTagging.$(ObjSuf) \
 	tmp/modules/BeamSpotFilter.$(ObjSuf) \
@@ -2439,7 +2448,7 @@ distclean: clean
 dist:
 	@echo ">> Building $(DISTTAR)"
 	@mkdir -p $(DISTDIR)
-	@cp -a AUTHORS CHANGELOG CMakeLists.txt COPYING DelphesEnv.sh LICENSE NOTICE README README_4LHCb VERSION Makefile MinBias.pileup configure cards classes converters display doc examples external modules python readers validation $(DISTDIR)
+	@cp -a AUTHORS CHANGELOG CMakeLists.txt COPYING DelphesEnv.sh LICENSE NOTICE README README_4LHCb Makefile MinBias.pileup configure cards classes converters display doc examples external modules python readers validation $(DISTDIR)
 	@find $(DISTDIR) -depth -name .\* -exec rm -rf {} \;
 	@tar -czf $(DISTTAR) $(DISTDIR)
 	@rm -rf $(DISTDIR)
