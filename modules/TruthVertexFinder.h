@@ -16,47 +16,42 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MomentumSmearing_h
-#define MomentumSmearing_h
+#ifndef TruthVertexFinder_h
+#define TruthVertexFinder_h
 
-/** \class MomentumSmearing
+/** \class TruthVertexFinder
  *
- *  Performs transverse momentum resolution smearing.
+ *  Produces list of MC truth vertices
  *
- *  \author P. Demin - UCL, Louvain-la-Neuve
+ *  \author M. Selvaggi - CERN
  *
  */
 
 #include "classes/DelphesModule.h"
 
-class TIterator;
 class TObjArray;
-class DelphesFormula;
 
-class MomentumSmearing: public DelphesModule
+class TruthVertexFinder: public DelphesModule
 {
 public:
-  MomentumSmearing();
-  ~MomentumSmearing();
+  TruthVertexFinder();
+  ~TruthVertexFinder();
 
   void Init();
   void Process();
   void Finish();
 
 private:
-  Double_t LogNormal(Double_t mean, Double_t sigma);
 
-  DelphesFormula *fFormula; //!
+  Double_t fResolution; //!
 
   TIterator *fItInputArray; //!
+  TIterator *fItOutputArray; //!
 
   const TObjArray *fInputArray; //!
 
-  TObjArray *fOutputArray; //!
-
-  Double_t fUseMomentumVector; //!
-
-  ClassDef(MomentumSmearing, 1)
+  TObjArray *fVertexOutputArray; //!
+  ClassDef(TruthVertexFinder, 1)
 };
 
 #endif

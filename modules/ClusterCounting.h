@@ -1,6 +1,6 @@
 /*
  *  Delphes: a framework for fast simulation of a generic collider experiment
- *  Copyright (C) 2012-2014  Universite catholique de Louvain (UCL), Belgium
+ *  Copyright (C) 2020  Universite catholique de Louvain (UCLouvain), Belgium
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,14 +16,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MomentumSmearing_h
-#define MomentumSmearing_h
+#ifndef ClusterCounting_h
+#define ClusterCounting_h
 
-/** \class MomentumSmearing
+/** \class ClusterCounting
  *
- *  Performs transverse momentum resolution smearing.
+ *  Counts ionisation clusters of energy loss in drift chambers
  *
- *  \author P. Demin - UCL, Louvain-la-Neuve
+ *  \authors F. Bedeschi - INFN
+ *           M. Selvaggi - CERN
  *
  */
 
@@ -31,22 +32,30 @@
 
 class TIterator;
 class TObjArray;
-class DelphesFormula;
 
-class MomentumSmearing: public DelphesModule
+class TrkUtil;
+
+class ClusterCounting: public DelphesModule
 {
 public:
-  MomentumSmearing();
-  ~MomentumSmearing();
+  ClusterCounting();
+  ~ClusterCounting();
 
   void Init();
   void Process();
   void Finish();
 
 private:
-  Double_t LogNormal(Double_t mean, Double_t sigma);
 
-  DelphesFormula *fFormula; //!
+  Double_t fRmin;
+	Double_t fRmax;
+	Double_t fZmin;
+	Double_t fZmax;
+  Double_t fBz;
+
+  Int_t fGasOption;
+
+  TrkUtil *fTrackUtil;
 
   TIterator *fItInputArray; //!
 
@@ -54,9 +63,7 @@ private:
 
   TObjArray *fOutputArray; //!
 
-  Double_t fUseMomentumVector; //!
-
-  ClassDef(MomentumSmearing, 1)
+  ClassDef(ClusterCounting, 1)
 };
 
 #endif

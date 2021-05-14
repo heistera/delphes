@@ -354,6 +354,8 @@ void TreeWriter::ProcessTracks(ExRootTreeBranch *branch, TObjArray *array)
 
     entry->D0 = candidate->D0;
     entry->DZ = candidate->DZ;
+    entry->Nclusters = candidate->Nclusters;
+    entry->dNdx = candidate->dNdx;
 
     entry->ErrorP = candidate->ErrorP;
     entry->ErrorPT = candidate->ErrorPT;
@@ -402,8 +404,9 @@ void TreeWriter::ProcessTracks(ExRootTreeBranch *branch, TObjArray *array)
     entry->C = candidate->C;
     entry->Mass = m;
 
-    particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
-    const TLorentzVector &initialPosition = particle->Position;
+    //particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
+    //const TLorentzVector &initialPosition = particle->Position;
+    const TLorentzVector &initialPosition = candidate->InitialPosition;
 
     entry->X = initialPosition.X();
     entry->Y = initialPosition.Y();
@@ -506,6 +509,8 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
 
     entry->D0 = candidate->D0;
     entry->DZ = candidate->DZ;
+    entry->Nclusters = candidate->Nclusters;
+    entry->dNdx = candidate->dNdx;
 
     entry->ErrorP = candidate->ErrorP;
     entry->ErrorPT = candidate->ErrorPT;
@@ -554,8 +559,9 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->C = candidate->C;
     entry->Mass = m;
 
-    particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
-    const TLorentzVector &initialPosition = particle->Position;
+    //particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
+    //const TLorentzVector &initialPosition = particle->Position;
+    const TLorentzVector &initialPosition = candidate->InitialPosition;
 
     entry->X = initialPosition.X();
     entry->Y = initialPosition.Y();
@@ -571,7 +577,7 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->Edges[2] = candidate->Edges[2];
     entry->Edges[3] = candidate->Edges[3];
 
-    entry->T = position.T() * 1.0E-3 / c_light;
+    //entry->T = position.T() * 1.0E-3 / c_light;
     entry->NTimeHits = candidate->NTimeHits;
 
     FillParticles(candidate, &entry->Particles);

@@ -16,47 +16,46 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MomentumSmearing_h
-#define MomentumSmearing_h
+#ifndef TimeOfFlight_h
+#define TimeOfFlight_h
 
-/** \class MomentumSmearing
+/** \class TimeOfFlight
  *
- *  Performs transverse momentum resolution smearing.
+ *  Calculates Time-Of-Flight
  *
- *  \author P. Demin - UCL, Louvain-la-Neuve
+ *  \author Michele Selvaggi - CERN
  *
- */
+*/
 
 #include "classes/DelphesModule.h"
 
 class TIterator;
 class TObjArray;
-class DelphesFormula;
 
-class MomentumSmearing: public DelphesModule
+class TimeOfFlight: public DelphesModule
 {
 public:
-  MomentumSmearing();
-  ~MomentumSmearing();
+  TimeOfFlight();
+  ~TimeOfFlight();
 
   void Init();
   void Process();
   void Finish();
+  void ComputeVertexMomenta();
 
 private:
-  Double_t LogNormal(Double_t mean, Double_t sigma);
 
-  DelphesFormula *fFormula; //!
+  Int_t fVertexTimeMode;
 
-  TIterator *fItInputArray; //!
+  TIterator *fItTrackInputArray; //!
+  TIterator *fItVertexInputArray; //!
 
-  const TObjArray *fInputArray; //!
+  const TObjArray *fTrackInputArray; //!
+  const TObjArray *fVertexInputArray; //!
 
   TObjArray *fOutputArray; //!
 
-  Double_t fUseMomentumVector; //!
-
-  ClassDef(MomentumSmearing, 1)
+  ClassDef(TimeOfFlight, 1)
 };
 
 #endif

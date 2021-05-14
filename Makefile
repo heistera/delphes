@@ -415,8 +415,10 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/MomentumSmearing.h \
 	modules/TrackSmearing.h \
 	modules/TrackCovariance.h \
+	modules/ClusterCounting.h \
 	modules/ImpactParameterSmearing.h \
 	modules/TimeSmearing.h \
+	modules/TimeOfFlight.h \
 	modules/SimpleCalorimeter.h \
 	modules/DenseTrackFilter.h \
 	modules/Calorimeter.h \
@@ -453,6 +455,7 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/VertexFinderDA4D.h \
 	modules/DecayFilter.h \
 	modules/ParticleDensity.h \
+	modules/TruthVertexFinder.h \
 	modules/ExampleModule.h
 tmp/modules/ModulesDict$(PcmSuf): \
 	tmp/modules/ModulesDict.$(SrcSuf)
@@ -710,6 +713,11 @@ tmp/modules/Cloner.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/ClusterCounting.$(ObjSuf): \
+	modules/ClusterCounting.$(SrcSuf) \
+	modules/ClusterCounting.h \
+	classes/DelphesClasses.h \
+	external/TrackCovariance/TrkUtil.h
 tmp/modules/ConstituentFilter.$(ObjSuf): \
 	modules/ConstituentFilter.$(SrcSuf) \
 	modules/ConstituentFilter.h \
@@ -1012,6 +1020,15 @@ tmp/modules/TauTagging.$(ObjSuf): \
 	classes/DelphesClasses.h \
 	classes/DelphesFactory.h \
 	classes/DelphesFormula.h
+tmp/modules/TimeOfFlight.$(ObjSuf): \
+	modules/TimeOfFlight.$(SrcSuf) \
+	modules/TimeOfFlight.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/TimeSmearing.$(ObjSuf): \
 	modules/TimeSmearing.$(SrcSuf) \
 	modules/TimeSmearing.h \
@@ -1071,6 +1088,16 @@ tmp/modules/TreeWriter.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h \
 	external/ExRootAnalysis/ExRootTreeBranch.h
+tmp/modules/TruthVertexFinder.$(ObjSuf): \
+	modules/TruthVertexFinder.$(SrcSuf) \
+	modules/TruthVertexFinder.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesPileUpReader.h \
+	classes/DelphesTF2.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/UniqueObjectFinder.$(ObjSuf): \
 	modules/UniqueObjectFinder.$(SrcSuf) \
 	modules/UniqueObjectFinder.h \
@@ -1182,6 +1209,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/BeamSpotFilter.$(ObjSuf) \
 	tmp/modules/Calorimeter.$(ObjSuf) \
 	tmp/modules/Cloner.$(ObjSuf) \
+	tmp/modules/ClusterCounting.$(ObjSuf) \
 	tmp/modules/ConstituentFilter.$(ObjSuf) \
 	tmp/modules/DecayFilter.$(ObjSuf) \
 	tmp/modules/Delphes.$(ObjSuf) \
@@ -1214,6 +1242,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/StatusPidFilter.$(ObjSuf) \
 	tmp/modules/TaggingParticlesSkimmer.$(ObjSuf) \
 	tmp/modules/TauTagging.$(ObjSuf) \
+	tmp/modules/TimeOfFlight.$(ObjSuf) \
 	tmp/modules/TimeSmearing.$(ObjSuf) \
 	tmp/modules/TrackCountingBTagging.$(ObjSuf) \
 	tmp/modules/TrackCountingTauTagging.$(ObjSuf) \
@@ -1221,6 +1250,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/TrackPileUpSubtractor.$(ObjSuf) \
 	tmp/modules/TrackSmearing.$(ObjSuf) \
 	tmp/modules/TreeWriter.$(ObjSuf) \
+	tmp/modules/TruthVertexFinder.$(ObjSuf) \
 	tmp/modules/UniqueObjectFinder.$(ObjSuf) \
 	tmp/modules/VertexFinder.$(ObjSuf) \
 	tmp/modules/VertexFinderDA4D.$(ObjSuf) \
@@ -1939,15 +1969,15 @@ modules/ExampleModule.h: \
 	classes/DelphesModule.h
 	@touch $@
 
+modules/Merger.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 modules/Isolation.h: \
 	classes/DelphesModule.h
 	@touch $@
 
 modules/EnergyScale.h: \
-	classes/DelphesModule.h
-	@touch $@
-
-modules/Merger.h: \
 	classes/DelphesModule.h
 	@touch $@
 
@@ -2063,6 +2093,10 @@ external/fastjet/contribs/Nsubjettiness/ExtraRecombiners.hh: \
 
 display/DelphesBranchElement.h: \
 	display/DelphesCaloData.h
+	@touch $@
+
+modules/TimeOfFlight.h: \
+	classes/DelphesModule.h
 	@touch $@
 
 external/fastjet/contribs/Nsubjettiness/NjettinessPlugin.hh: \
@@ -2183,6 +2217,10 @@ modules/PdgCodeFilter.h: \
 	classes/DelphesModule.h
 	@touch $@
 
+modules/TruthVertexFinder.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 classes/DelphesSTDHEPReader.h: \
 	classes/DelphesXDRReader.h
 	@touch $@
@@ -2255,6 +2293,10 @@ external/fastjet/internal/BasicRandom.hh: \
 	external/fastjet/internal/base.hh
 	@touch $@
 
+modules/ClusterCounting.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 modules/SimpleCalorimeter.h: \
 	classes/DelphesModule.h
 	@touch $@
@@ -2294,11 +2336,11 @@ modules/ParticleDensity.h: \
 	classes/DelphesModule.h
 	@touch $@
 
-modules/TimeSmearing.h: \
+modules/TreeWriter.h: \
 	classes/DelphesModule.h
 	@touch $@
 
-modules/TreeWriter.h: \
+modules/TimeSmearing.h: \
 	classes/DelphesModule.h
 	@touch $@
 
