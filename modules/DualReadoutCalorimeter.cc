@@ -424,7 +424,6 @@ void DualReadoutCalorimeter::Process()
         }
       }
 
-
       // in Dual Readout we do not care if tracks are ECAL of HCAL
       if(fECalTrackFractions[number] > 1.0E-9 || fHCalTrackFractions[number] > 1.0E-9)
       {
@@ -443,7 +442,6 @@ void DualReadoutCalorimeter::Process()
 
         fTrackSigma += (track->TrackResolution)*energyGuess*(track->TrackResolution)*energyGuess;
         fTowerTrackArray->Add(track);
-
       }
       else
       {
@@ -471,13 +469,6 @@ void DualReadoutCalorimeter::Process()
     // assume combined timing measurements in ECAL/HCAL sections
     fTowerTime += (ecalEnergy + hcalEnergy) * position.T(); //sigma_t ~ 1/sqrt(E)
     fTowerTimeWeight += ecalEnergy + hcalEnergy;
-    //fTowerTime += (hcalEnergy) * position.T(); //sigma_t ~ 1/sqrt(E)
-    //fTowerTimeWeight += hcalEnergy;
-    //fTowerTime +=  position.T(); //sigma_t ~ 1/sqrt(E)
-    //fTowerTimeWeight += 1;
-
-    //cout<<" tower particle PID, pt, eta, phi, l, tof:  "<<particle->PID<<", "<<momentum.E()<<", "<<momentum.Eta()<<", "<<momentum.Phi()<<", "<<position.Vect().Mag()<<", "<<position.T()/2.99792458E2<<endl;
-    //cout<<" tower particle time, weight:  "<<fTowerTime/2.99792458E2<<", "<<fTowerTimeWeight<<endl;
 
     fTower->AddCandidate(particle);
     fTower->Position = position;
@@ -509,13 +500,11 @@ void DualReadoutCalorimeter::FinalizeTower()
 
   if(!fTower) return;
 
-
   // if no hadronic energy, use ECAL resolution
   if (fHCalTowerEnergy <= fHCalEnergyMin)
   {
     energy = fECalTowerEnergy;
     sigma  = fECalResolutionFormula->Eval(0.0, fTowerEta, 0.0, energy);
-    //cout<<"em energy"<<energy<<", sigma: "<<sigma<<endl;
   }
 
   // if hadronic fraction > 0, use HCAL resolution
@@ -523,11 +512,9 @@ void DualReadoutCalorimeter::FinalizeTower()
   {
     energy = fECalTowerEnergy + fHCalTowerEnergy;
     sigma  = fHCalResolutionFormula->Eval(0.0, fTowerEta, 0.0, energy);
-    //cout<<"had energy: "<<energy<<", sigma: "<<sigma<<endl;
   }
 
   energy = LogNormal(energy, sigma);
-  //cout<<energy<<","<<ecalEnergy<<","<<hcalEnergy<<endl;
 
   if(energy < fEnergyMin || energy < fEnergySignificanceMin*sigma) energy = 0.0;
 
@@ -560,16 +547,19 @@ void DualReadoutCalorimeter::FinalizeTower()
   pt = energy / TMath::CosH(eta);
 
   // check whether barrel or endcap tower
-  if ((fTowerRmax - fTower->Position.Perp()) < 1.e-06 && TMath::Abs(eta) > 0.)
+
+  // endcap
+  if (TMath::Abs(fTower->Position.Pt() - fTowerRmax) > 1.e-06 && TMath::Abs(eta) > 0.){
     r = fTower->Position.Z()/TMath::SinH(eta);
-  else
+  }
+  // barrel
+  else {
     r = fTower->Position.Pt();
+  }
 
   fTower->Position.SetPtEtaPhiE(r, eta, phi, time);
-
   fTower->Momentum.SetPtEtaPhiE(pt, eta, phi, energy);
   fTower->L = fTower->Position.Vect().Mag();
-  //cout<<"   tower pt, eta, phi, l, tof:  "<<fTower->Momentum.E()<<", "<<fTower->Momentum.Eta()<<", "<<fTower->Momentum.Phi()<<", "<<fTower->L<<", "<<fTower->Position.T()/2.99792458E2<<endl;
 
   fTower->Momentum.SetPtEtaPhiE(pt, eta, phi, energy);
   fTower->Eem = ecalEnergy;

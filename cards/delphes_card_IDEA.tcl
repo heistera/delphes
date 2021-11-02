@@ -1,3 +1,5 @@
+set RandomSeed 123
+
 ####################################################################                                l
 # FCC-ee IDEA detector model
 #
@@ -39,11 +41,13 @@ set ExecutionPath {
   TimeOfFlight
 
   TrackMerger
+  ForwardLooperTracks
   Calorimeter
 
   TimeSmearingNeutrals
   TimeOfFlightNeutralHadron
 
+  EFlowTrackMerger
   EFlowMerger
 
   PhotonEfficiency
@@ -120,13 +124,10 @@ module Efficiency ChargedHadronTrackingEfficiency {
     set OutputArray chargedHadrons
     set UseMomentumVector true
 
-    # We use only one efficiency, we set only 0 effincency out of eta bounds:
-
     set EfficiencyFormula {
-        (abs(eta) > 3.0)                                       * (0.000) +
-        (pt >= 0.5) * (abs(eta) <= 3.0)                    * (0.997) +
-        (pt < 0.5 && pt >= 0.3) * (abs(eta) <= 3.0)    * (0.65) +
-        (pt < 0.3) * (abs(eta) <= 3.0)                     * (0.06)
+        (abs(eta) > 2.56)                                  * (0.000) +
+        (pt < 0.1) * (abs(eta) <= 2.56)                    * (0.000) +
+        (pt >= 0.1) * (abs(eta) <= 2.56)                   * (1.000)
     }
 }
 
@@ -141,12 +142,10 @@ module Efficiency ElectronTrackingEfficiency {
     set OutputArray electrons
     set UseMomentumVector true
 
-    # Current full simulation with CLICdet provides for electrons:
     set EfficiencyFormula {
-        (abs(eta) > 3.0)                                       * (0.000) +
-        (pt >= 0.5) * (abs(eta) <= 3.0)                    * (0.997) +
-        (pt < 0.5 && pt >= 0.3) * (abs(eta) <= 3.0)    * (0.65) +
-        (pt < 0.3) * (abs(eta) <= 3.0)                     * (0.06)
+        (abs(eta) > 2.56)                                  * (0.000) +
+        (pt < 0.1) * (abs(eta) <= 2.56)                    * (0.000) +
+        (pt >= 0.1) * (abs(eta) <= 2.56)                   * (1.000)
     }
 }
 
@@ -160,12 +159,10 @@ module Efficiency MuonTrackingEfficiency {
     set OutputArray muons
     set UseMomentumVector true
 
-    # Current full simulation with CLICdet provides for muons:
     set EfficiencyFormula {
-        (abs(eta) > 3.0)                                       * (0.000) +
-        (pt >= 0.5) * (abs(eta) <= 3.0)                    * (0.997) +
-        (pt < 0.5 && pt >= 0.3) * (abs(eta) <= 3.0)    * (0.65) +
-        (pt < 0.3) * (abs(eta) <= 3.0)                     * (0.06)
+        (abs(eta) > 2.56)                                  * (0.000) +
+        (pt < 0.1) * (abs(eta) <= 2.56)                    * (0.000) +
+        (pt >= 0.1) * (abs(eta) <= 2.56)                   * (1.000)
     }
 }
 
@@ -180,6 +177,7 @@ module Merger TrackMergerPre {
   add InputArray MuonTrackingEfficiency/muons
   set OutputArray tracks
 }
+
 
 
 ########################################
@@ -440,6 +438,24 @@ module Merger TrackMerger {
 }
 
 
+######################
+# Looper Selection
+######################
+
+module Efficiency ForwardLooperTracks  {
+  set InputArray TrackMerger/tracks
+  set OutputArray tracks
+  set UseMomentumVector False
+
+  ## select looping tracks that end up in position |eta| > 3.142 (lost by calo)
+  set EfficiencyFormula {
+    (abs(eta) > 3.0 )                                 * (1.000) +
+    (abs(eta) <= 3.0 )                                * (0.000)
+  }
+
+}
+
+
 #############
 # Calorimeter
 #############
@@ -456,10 +472,11 @@ module DualReadoutCalorimeter Calorimeter {
 
   set ECalEnergyMin 0.5
   set HCalEnergyMin 0.5
+  set ECalEnergySignificanceMin 3.0
+  set HCalEnergySignificanceMin 3.0
+
   set EnergyMin 0.5
-  set ECalEnergySignificanceMin 1.0
-  set HCalEnergySignificanceMin 1.0
-  set EnergySignificanceMin 1.0
+  set EnergySignificanceMin 3.0
 
   #set SmearTowerCenter true
   set SmearTowerCenter false
@@ -490,7 +507,7 @@ module DualReadoutCalorimeter Calorimeter {
     }
     #deta=0.02 units for 0.88 < |eta| <= 3.0
     #first, from -3.0 to -0.88
-    for {set i 1} {$i <=106} {incr i} {
+    for {set i 0} {$i <=106} {incr i} {
         set eta [expr {-3.00 + $i * 0.02}]
         add EtaPhiBins $eta $PhiBins
     }
@@ -567,13 +584,27 @@ module TimeOfFlight TimeOfFlightNeutralHadron {
   set VertexTimeMode 1
 }
 
+
+############################
+# Energy flow track merger
+############################
+
+module Merger EFlowTrackMerger {
+# add InputArray InputArray
+  add InputArray Calorimeter/eflowTracks
+  add InputArray ForwardLooperTracks/tracks
+  set OutputArray eflowTracks
+}
+
+
+
 ####################
 # Energy flow merger
 ####################
 
 module Merger EFlowMerger {
 # add InputArray InputArray
-  add InputArray Calorimeter/eflowTracks
+  add InputArray EFlowTrackMerger/eflowTracks
   add InputArray Calorimeter/eflowPhotons
   add InputArray TimeOfFlightNeutralHadron/eflowNeutralHadrons
   set OutputArray eflow
@@ -612,7 +643,7 @@ module Isolation PhotonIsolation {
 
   set PTMin 0.5
 
-  set PTRatioMax 999.
+  set PTRatioMax 9999.
 }
 
 #################
@@ -620,7 +651,7 @@ module Isolation PhotonIsolation {
 #################
 
 module PdgCodeFilter ElectronFilter {
-  set InputArray Calorimeter/eflowTracks
+  set InputArray EFlowTrackMerger/eflowTracks
   set OutputArray electrons
   set Invert true
   add PdgCode {11}
@@ -632,7 +663,7 @@ module PdgCodeFilter ElectronFilter {
 #################
 
 module PdgCodeFilter MuonFilter {
-  set InputArray Calorimeter/eflowTracks
+  set InputArray EFlowTrackMerger/eflowTracks
   set OutputArray muons
   set Invert true
   add PdgCode {13}
@@ -673,7 +704,7 @@ module Isolation ElectronIsolation {
 
   set PTMin 0.5
 
-  set PTRatioMax 0.12
+  set PTRatioMax 9999
 }
 
 #################
@@ -709,7 +740,7 @@ module Isolation MuonIsolation {
 
   set PTMin 0.5
 
-  set PTRatioMax 0.25
+  set PTRatioMax 9999.
 }
 
 ###################
@@ -884,28 +915,21 @@ module TreeWriter TreeWriter {
     add Branch Delphes/allParticles Particle GenParticle
     add Branch TruthVertexFinder/vertices GenVertex Vertex
 
-    add Branch TrackMerger/tracks Track Track
-    add Branch Calorimeter/towers Tower Tower
-
-    add Branch Calorimeter/eflowTracks EFlowTrack Track
+    add Branch EFlowTrackMerger/eflowTracks EFlowTrack Track
     add Branch Calorimeter/eflowPhotons EFlowPhoton Tower
     add Branch TimeOfFlightNeutralHadron/eflowNeutralHadrons EFlowNeutralHadron Tower
 
     add Branch EFlowMerger/eflow ParticleFlowCandidate ParticleFlowCandidate
 
-    add Branch Calorimeter/photons CaloPhoton Photon
-    add Branch PhotonEfficiency/photons PhotonEff Photon
-    add Branch PhotonIsolation/photons PhotonIso Photon
+    add Branch ElectronEfficiency/electrons Electron Electron
+    add Branch MuonEfficiency/muons Muon Muon
+    add Branch PhotonEfficiency/photons Photon Photon
+
+    add Branch JetEnergyScale/jets Jet Jet
+    add Branch MissingET/momentum MissingET MissingET
 
     add Branch GenJetFinder/jets GenJet Jet
     add Branch GenMissingET/momentum GenMissingET MissingET
-
-    add Branch JetEnergyScale/jets Jet Jet
-    add Branch ElectronIsolation/electrons Electron Electron
-    add Branch PhotonIsolation/photons Photon Photon
-    add Branch MuonIsolation/muons Muon Muon
-
-    add Branch MissingET/momentum MissingET MissingET
 
     # add Info InfoName InfoValue
     add Info Bz $B
