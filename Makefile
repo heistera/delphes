@@ -470,7 +470,10 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/DecayFilter.h \
 	modules/ParticleDensity.h \
 	modules/TruthVertexFinder.h \
-	modules/ExampleModule.h
+	modules/ExampleModule.h \
+	modules/LLPFilter.h \
+	modules/CscClusterEfficiency.h \
+	modules/CscClusterId.h
 tmp/modules/ModulesDict$(PcmSuf): \
 	tmp/modules/ModulesDict.$(SrcSuf)
 ModulesDict$(PcmSuf): \
@@ -524,6 +527,10 @@ tmp/classes/DelphesClasses.$(ObjSuf): \
 	classes/DelphesClasses.h \
 	classes/DelphesFactory.h \
 	classes/SortableObject.h
+tmp/classes/DelphesCscClusterFormula.$(ObjSuf): \
+	classes/DelphesCscClusterFormula.$(SrcSuf) \
+	classes/DelphesCscClusterFormula.h \
+	classes/DelphesClasses.h
 tmp/classes/DelphesCylindricalFormula.$(ObjSuf): \
 	classes/DelphesCylindricalFormula.$(SrcSuf) \
 	classes/DelphesCylindricalFormula.h
@@ -748,6 +755,24 @@ tmp/modules/ConstituentFilter.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/CscClusterEfficiency.$(ObjSuf): \
+	modules/CscClusterEfficiency.$(SrcSuf) \
+	modules/CscClusterEfficiency.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesCscClusterFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/CscClusterId.$(ObjSuf): \
+	modules/CscClusterId.$(SrcSuf) \
+	modules/CscClusterId.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesCscClusterFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/DecayFilter.$(ObjSuf): \
 	modules/DecayFilter.$(SrcSuf) \
 	modules/DecayFilter.h \
@@ -882,6 +907,15 @@ tmp/modules/JetFlavorAssociation.$(ObjSuf): \
 tmp/modules/JetPileUpSubtractor.$(ObjSuf): \
 	modules/JetPileUpSubtractor.$(SrcSuf) \
 	modules/JetPileUpSubtractor.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/LLPFilter.$(ObjSuf): \
+	modules/LLPFilter.$(SrcSuf) \
+	modules/LLPFilter.h \
 	classes/DelphesClasses.h \
 	classes/DelphesFactory.h \
 	classes/DelphesFormula.h \
@@ -1169,6 +1203,7 @@ tmp/modules/Weighter.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootResult.h
 DELPHES_OBJ +=  \
 	tmp/classes/DelphesClasses.$(ObjSuf) \
+	tmp/classes/DelphesCscClusterFormula.$(ObjSuf) \
 	tmp/classes/DelphesCylindricalFormula.$(ObjSuf) \
 	tmp/classes/DelphesFactory.$(ObjSuf) \
 	tmp/classes/DelphesFormula.$(ObjSuf) \
@@ -1233,6 +1268,8 @@ DELPHES_OBJ +=  \
 	tmp/modules/Cloner.$(ObjSuf) \
 	tmp/modules/ClusterCounting.$(ObjSuf) \
 	tmp/modules/ConstituentFilter.$(ObjSuf) \
+	tmp/modules/CscClusterEfficiency.$(ObjSuf) \
+	tmp/modules/CscClusterId.$(ObjSuf) \
 	tmp/modules/DecayFilter.$(ObjSuf) \
 	tmp/modules/Delphes.$(ObjSuf) \
 	tmp/modules/DenseTrackFilter.$(ObjSuf) \
@@ -1248,6 +1285,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/JetFakeParticle.$(ObjSuf) \
 	tmp/modules/JetFlavorAssociation.$(ObjSuf) \
 	tmp/modules/JetPileUpSubtractor.$(ObjSuf) \
+	tmp/modules/LLPFilter.$(ObjSuf) \
 	tmp/modules/LeptonDressing.$(ObjSuf) \
 	tmp/modules/Merger.$(ObjSuf) \
 	tmp/modules/MomentumSmearing.$(ObjSuf) \
@@ -1933,6 +1971,10 @@ modules/FastJetGridMedianEstimator.h: \
 	classes/DelphesModule.h
 	@touch $@
 
+modules/LLPFilter.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 external/fastjet/internal/MinHeap.hh: \
 	external/fastjet/internal/base.hh
 	@touch $@
@@ -2262,6 +2304,10 @@ external/fastjet/RangeDefinition.hh: \
 	external/fastjet/internal/deprecated.hh
 	@touch $@
 
+modules/CscClusterEfficiency.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 external/fastjet/PseudoJetStructureBase.hh: \
 	external/fastjet/internal/base.hh
 	@touch $@
@@ -2386,6 +2432,10 @@ external/fastjet/LimitedWarning.hh: \
 
 external/fastjet/config.h: \
 	external/fastjet/config_win.h
+	@touch $@
+
+modules/CscClusterId.h: \
+	classes/DelphesModule.h
 	@touch $@
 
 classes/DelphesClasses.h: \
