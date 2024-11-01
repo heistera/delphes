@@ -1062,7 +1062,8 @@ tmp/modules/TrackCovariance.$(ObjSuf): \
 	classes/DelphesClasses.h \
 	external/TrackCovariance/SolGeom.h \
 	external/TrackCovariance/SolGridCov.h \
-	external/TrackCovariance/ObsTrk.h
+	external/TrackCovariance/ObsTrk.h \
+	classes/DelphesFormula.h
 tmp/modules/TrackPileUpSubtractor.$(ObjSuf): \
 	modules/TrackPileUpSubtractor.$(SrcSuf) \
 	modules/TrackPileUpSubtractor.h \
@@ -1331,6 +1332,7 @@ tmp/external/fastjet/ClusterSequencePassiveArea.$(ObjSuf): \
 	external/fastjet/ClusterSequenceVoronoiArea.hh
 tmp/external/fastjet/ClusterSequenceStructure.$(ObjSuf): \
 	external/fastjet/ClusterSequenceStructure.$(SrcSuf) \
+	external/fastjet/config.h \
 	external/fastjet/ClusterSequenceStructure.hh \
 	external/fastjet/Error.hh \
 	external/fastjet/PseudoJet.hh \
@@ -1366,7 +1368,8 @@ tmp/external/fastjet/ClusterSequence_TiledN2.$(ObjSuf): \
 	external/fastjet/internal/MinHeap.hh \
 	external/fastjet/internal/TilingExtent.hh
 tmp/external/fastjet/CompositeJetStructure.$(ObjSuf): \
-	external/fastjet/CompositeJetStructure.$(SrcSuf)
+	external/fastjet/CompositeJetStructure.$(SrcSuf) \
+	external/fastjet/CompositeJetStructure.hh
 tmp/external/fastjet/Dnn2piCylinder.$(ObjSuf): \
 	external/fastjet/Dnn2piCylinder.$(SrcSuf) \
 	external/fastjet/internal/Dnn2piCylinder.hh
@@ -1384,7 +1387,8 @@ tmp/external/fastjet/Error.$(ObjSuf): \
 	external/fastjet/Error.hh \
 	external/fastjet/config.h
 tmp/external/fastjet/FunctionOfPseudoJet.$(ObjSuf): \
-	external/fastjet/FunctionOfPseudoJet.$(SrcSuf)
+	external/fastjet/FunctionOfPseudoJet.$(SrcSuf) \
+	external/fastjet/FunctionOfPseudoJet.hh
 tmp/external/fastjet/GhostedAreaSpec.$(ObjSuf): \
 	external/fastjet/GhostedAreaSpec.$(SrcSuf) \
 	external/fastjet/GhostedAreaSpec.hh \
@@ -1493,11 +1497,14 @@ tmp/external/fastjet/plugins/ATLASCone/ATLASConePlugin.$(ObjSuf): \
 	external/fastjet/plugins/ATLASCone/ATLASConePlugin.$(SrcSuf) \
 	external/fastjet/ClusterSequence.hh
 tmp/external/fastjet/plugins/ATLASCone/Jet.$(ObjSuf): \
-	external/fastjet/plugins/ATLASCone/Jet.$(SrcSuf)
+	external/fastjet/plugins/ATLASCone/Jet.$(SrcSuf) \
+	external/fastjet/internal/base.hh
 tmp/external/fastjet/plugins/ATLASCone/JetConeFinderTool.$(ObjSuf): \
-	external/fastjet/plugins/ATLASCone/JetConeFinderTool.$(SrcSuf)
+	external/fastjet/plugins/ATLASCone/JetConeFinderTool.$(SrcSuf) \
+	external/fastjet/internal/base.hh
 tmp/external/fastjet/plugins/ATLASCone/JetSplitMergeTool.$(ObjSuf): \
-	external/fastjet/plugins/ATLASCone/JetSplitMergeTool.$(SrcSuf)
+	external/fastjet/plugins/ATLASCone/JetSplitMergeTool.$(SrcSuf) \
+	external/fastjet/internal/base.hh
 tmp/external/fastjet/plugins/CDFCones/CDFJetCluPlugin.$(ObjSuf): \
 	external/fastjet/plugins/CDFCones/CDFJetCluPlugin.$(SrcSuf) \
 	external/fastjet/ClusterSequence.hh
@@ -1569,22 +1576,33 @@ tmp/external/fastjet/tools/BackgroundEstimatorBase.$(ObjSuf): \
 	external/fastjet/tools/BackgroundEstimatorBase.$(SrcSuf) \
 	external/fastjet/tools/BackgroundEstimatorBase.hh
 tmp/external/fastjet/tools/CASubJetTagger.$(ObjSuf): \
-	external/fastjet/tools/CASubJetTagger.$(SrcSuf)
+	external/fastjet/tools/CASubJetTagger.$(SrcSuf) \
+	external/fastjet/tools/CASubJetTagger.hh \
+	external/fastjet/ClusterSequence.hh
 tmp/external/fastjet/tools/Filter.$(ObjSuf): \
 	external/fastjet/tools/Filter.$(SrcSuf) \
 	external/fastjet/tools/Filter.hh \
 	external/fastjet/tools/Recluster.hh \
-	external/fastjet/tools/Subtractor.hh
+	external/fastjet/tools/Subtractor.hh \
+	external/fastjet/ClusterSequenceActiveAreaExplicitGhosts.hh
 tmp/external/fastjet/tools/GridMedianBackgroundEstimator.$(ObjSuf): \
 	external/fastjet/tools/GridMedianBackgroundEstimator.$(SrcSuf) \
 	external/fastjet/tools/GridMedianBackgroundEstimator.hh
 tmp/external/fastjet/tools/JHTopTagger.$(ObjSuf): \
-	external/fastjet/tools/JHTopTagger.$(SrcSuf)
+	external/fastjet/tools/JHTopTagger.$(SrcSuf) \
+	external/fastjet/tools/JHTopTagger.hh \
+	external/fastjet/Error.hh \
+	external/fastjet/JetDefinition.hh \
+	external/fastjet/ClusterSequence.hh
 tmp/external/fastjet/tools/JetMedianBackgroundEstimator.$(ObjSuf): \
 	external/fastjet/tools/JetMedianBackgroundEstimator.$(SrcSuf) \
-	external/fastjet/tools/JetMedianBackgroundEstimator.hh
+	external/fastjet/tools/JetMedianBackgroundEstimator.hh \
+	external/fastjet/ClusterSequenceArea.hh \
+	external/fastjet/ClusterSequenceStructure.hh
 tmp/external/fastjet/tools/MassDropTagger.$(ObjSuf): \
-	external/fastjet/tools/MassDropTagger.$(SrcSuf)
+	external/fastjet/tools/MassDropTagger.$(SrcSuf) \
+	external/fastjet/tools/MassDropTagger.hh \
+	external/fastjet/ClusterSequence.hh
 tmp/external/fastjet/tools/Pruner.$(ObjSuf): \
 	external/fastjet/tools/Pruner.$(SrcSuf) \
 	external/fastjet/tools/Pruner.hh \
@@ -1593,14 +1611,19 @@ tmp/external/fastjet/tools/Pruner.$(ObjSuf): \
 tmp/external/fastjet/tools/Recluster.$(ObjSuf): \
 	external/fastjet/tools/Recluster.$(SrcSuf) \
 	external/fastjet/tools/Recluster.hh \
-	external/fastjet/CompositeJetStructure.hh
+	external/fastjet/CompositeJetStructure.hh \
+	external/fastjet/ClusterSequenceActiveAreaExplicitGhosts.hh
 tmp/external/fastjet/tools/RestFrameNSubjettinessTagger.$(ObjSuf): \
-	external/fastjet/tools/RestFrameNSubjettinessTagger.$(SrcSuf)
+	external/fastjet/tools/RestFrameNSubjettinessTagger.$(SrcSuf) \
+	external/fastjet/tools/RestFrameNSubjettinessTagger.hh \
+	external/fastjet/tools/Boost.hh \
+	external/fastjet/ClusterSequence.hh
 tmp/external/fastjet/tools/Subtractor.$(ObjSuf): \
 	external/fastjet/tools/Subtractor.$(SrcSuf) \
 	external/fastjet/tools/Subtractor.hh
 tmp/external/fastjet/tools/TopTaggerBase.$(ObjSuf): \
-	external/fastjet/tools/TopTaggerBase.$(SrcSuf)
+	external/fastjet/tools/TopTaggerBase.$(SrcSuf) \
+	external/fastjet/tools/TopTaggerBase.hh
 tmp/modules/FastJetFinder.$(ObjSuf): \
 	modules/FastJetFinder.$(SrcSuf) \
 	modules/FastJetFinder.h \
@@ -1818,8 +1841,6 @@ tmp/external/tcl/panic.$(ObjSuf): \
 	external/tcl/panic.c
 tmp/external/tcl/tclAlloc.$(ObjSuf): \
 	external/tcl/tclAlloc.c
-tmp/external/tcl/tclAsync.$(ObjSuf): \
-	external/tcl/tclAsync.c
 tmp/external/tcl/tclBasic.$(ObjSuf): \
 	external/tcl/tclBasic.c
 tmp/external/tcl/tclCkalloc.$(ObjSuf): \
@@ -1842,8 +1863,6 @@ tmp/external/tcl/tclHash.$(ObjSuf): \
 	external/tcl/tclHash.c
 tmp/external/tcl/tclIndexObj.$(ObjSuf): \
 	external/tcl/tclIndexObj.c
-tmp/external/tcl/tclLink.$(ObjSuf): \
-	external/tcl/tclLink.c
 tmp/external/tcl/tclListObj.$(ObjSuf): \
 	external/tcl/tclListObj.c
 tmp/external/tcl/tclNamesp.$(ObjSuf): \
@@ -1856,8 +1875,6 @@ tmp/external/tcl/tclPreserve.$(ObjSuf): \
 	external/tcl/tclPreserve.c
 tmp/external/tcl/tclProc.$(ObjSuf): \
 	external/tcl/tclProc.c
-tmp/external/tcl/tclResolve.$(ObjSuf): \
-	external/tcl/tclResolve.c
 tmp/external/tcl/tclStringObj.$(ObjSuf): \
 	external/tcl/tclStringObj.c
 tmp/external/tcl/tclUtil.$(ObjSuf): \
@@ -1867,7 +1884,6 @@ tmp/external/tcl/tclVar.$(ObjSuf): \
 TCL_OBJ +=  \
 	tmp/external/tcl/panic.$(ObjSuf) \
 	tmp/external/tcl/tclAlloc.$(ObjSuf) \
-	tmp/external/tcl/tclAsync.$(ObjSuf) \
 	tmp/external/tcl/tclBasic.$(ObjSuf) \
 	tmp/external/tcl/tclCkalloc.$(ObjSuf) \
 	tmp/external/tcl/tclCmdAH.$(ObjSuf) \
@@ -1879,14 +1895,12 @@ TCL_OBJ +=  \
 	tmp/external/tcl/tclGet.$(ObjSuf) \
 	tmp/external/tcl/tclHash.$(ObjSuf) \
 	tmp/external/tcl/tclIndexObj.$(ObjSuf) \
-	tmp/external/tcl/tclLink.$(ObjSuf) \
 	tmp/external/tcl/tclListObj.$(ObjSuf) \
 	tmp/external/tcl/tclNamesp.$(ObjSuf) \
 	tmp/external/tcl/tclObj.$(ObjSuf) \
 	tmp/external/tcl/tclParse.$(ObjSuf) \
 	tmp/external/tcl/tclPreserve.$(ObjSuf) \
 	tmp/external/tcl/tclProc.$(ObjSuf) \
-	tmp/external/tcl/tclResolve.$(ObjSuf) \
 	tmp/external/tcl/tclStringObj.$(ObjSuf) \
 	tmp/external/tcl/tclUtil.$(ObjSuf) \
 	tmp/external/tcl/tclVar.$(ObjSuf)
@@ -1906,6 +1920,7 @@ external/fastjet/ClusterSequence.hh: \
 	external/fastjet/LimitedWarning.hh \
 	external/fastjet/FunctionOfPseudoJet.hh \
 	external/fastjet/ClusterSequenceStructure.hh \
+	external/fastjet/internal/thread_safety_helpers.hh \
 	external/fastjet/internal/deprecated.hh
 	@touch $@
 external/fastjet/internal/ClosestPair2D.hh: \
@@ -1938,6 +1953,12 @@ external/fastjet/ClusterSequenceActiveAreaExplicitGhosts.hh: \
 	external/fastjet/GhostedAreaSpec.hh \
 	external/fastjet/LimitedWarning.hh
 	@touch $@
+external/fastjet/tools/CASubJetTagger.hh: \
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/WrappedStructure.hh \
+	external/fastjet/tools/Transformer.hh \
+	external/fastjet/LimitedWarning.hh
+	@touch $@
 external/fastjet/JetDefinition.hh: \
 	external/fastjet/internal/numconsts.hh \
 	external/fastjet/PseudoJet.hh \
@@ -1950,6 +1971,12 @@ modules/ConstituentFilter.h: \
 modules/Calorimeter.h: \
 	classes/DelphesModule.h
 	@touch $@
+external/fastjet/tools/Filter.hh: \
+	external/fastjet/ClusterSequence.hh \
+	external/fastjet/Selector.hh \
+	external/fastjet/CompositeJetStructure.hh \
+	external/fastjet/tools/Transformer.hh
+	@touch $@
 classes/DelphesModule.h: \
 	external/ExRootAnalysis/ExRootTask.h
 	@touch $@
@@ -1961,6 +1988,11 @@ modules/IdentificationMap.h: \
 	@touch $@
 modules/TrackCovariance.h: \
 	classes/DelphesModule.h
+	@touch $@
+external/fastjet/tools/Boost.hh: \
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/FunctionOfPseudoJet.hh \
+	external/fastjet/PseudoJetStructureBase.hh
 	@touch $@
 modules/ExampleModule.h: \
 	classes/DelphesModule.h
@@ -2003,6 +2035,11 @@ external/fastjet/Error.hh: \
 	@touch $@
 modules/DecayFilter.h: \
 	classes/DelphesModule.h
+	@touch $@
+external/fastjet/tools/MassDropTagger.hh: \
+	external/fastjet/tools/Transformer.hh \
+	external/fastjet/LimitedWarning.hh \
+	external/fastjet/WrappedStructure.hh
 	@touch $@
 external/fastjet/internal/TilingExtent.hh: \
 	external/fastjet/ClusterSequence.hh
@@ -2065,6 +2102,9 @@ external/fastjet/contribs/Nsubjettiness/ExtraRecombiners.hh: \
 	external/fastjet/PseudoJet.hh \
 	external/fastjet/JetDefinition.hh
 	@touch $@
+external/fastjet/NNFJN2Plain.hh: \
+	external/fastjet/NNBase.hh
+	@touch $@
 display/DelphesBranchElement.h: \
 	display/DelphesCaloData.h
 	@touch $@
@@ -2074,6 +2114,10 @@ modules/TimeOfFlight.h: \
 external/fastjet/contribs/Nsubjettiness/NjettinessPlugin.hh: \
 	external/fastjet/ClusterSequence.hh \
 	external/fastjet/JetDefinition.hh
+	@touch $@
+external/fastjet/tools/Recluster.hh: \
+	external/fastjet/JetDefinition.hh \
+	external/fastjet/FunctionOfPseudoJet.hh
 	@touch $@
 external/fastjet/internal/DynamicNearestNeighbours.hh: \
 	external/fastjet/internal/numconsts.hh \
@@ -2086,6 +2130,7 @@ modules/Cloner.h: \
 	classes/DelphesModule.h
 	@touch $@
 external/fastjet/PseudoJet.hh: \
+	external/fastjet/config.h \
 	external/fastjet/internal/numconsts.hh \
 	external/fastjet/internal/IsBase.hh \
 	external/fastjet/SharedPtr.hh \
@@ -2125,7 +2170,8 @@ external/fastjet/GhostedAreaSpec.hh: \
 	external/fastjet/internal/BasicRandom.hh \
 	external/fastjet/Selector.hh \
 	external/fastjet/LimitedWarning.hh \
-	external/fastjet/internal/deprecated.hh
+	external/fastjet/internal/deprecated.hh \
+	external/fastjet/SharedPtr.hh
 	@touch $@
 external/fastjet/internal/Dnn4piCylinder.hh: \
 	external/fastjet/internal/DynamicNearestNeighbours.hh \
@@ -2138,6 +2184,15 @@ modules/VertexSorter.h: \
 modules/Delphes.h: \
 	classes/DelphesModule.h
 	@touch $@
+external/fastjet/tools/RestFrameNSubjettinessTagger.hh: \
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/JetDefinition.hh \
+	external/fastjet/CompositeJetStructure.hh \
+	external/fastjet/tools/Transformer.hh
+	@touch $@
+external/fastjet/NNH.hh: \
+	external/fastjet/NNBase.hh
+	@touch $@
 modules/VertexFinder.h: \
 	classes/DelphesModule.h
 	@touch $@
@@ -2146,6 +2201,10 @@ modules/UniqueObjectFinder.h: \
 	@touch $@
 modules/TrackCountingBTagging.h: \
 	classes/DelphesModule.h
+	@touch $@
+external/fastjet/FunctionOfPseudoJet.hh: \
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/Selector.hh
 	@touch $@
 modules/PileUpMergerPythia8.h: \
 	classes/DelphesModule.h
@@ -2165,6 +2224,12 @@ modules/ParticlePropagator.h: \
 modules/PdgCodeFilter.h: \
 	classes/DelphesModule.h
 	@touch $@
+external/fastjet/tools/BackgroundEstimatorBase.hh: \
+	external/fastjet/ClusterSequenceAreaBase.hh \
+	external/fastjet/FunctionOfPseudoJet.hh \
+	external/fastjet/Selector.hh \
+	external/fastjet/Error.hh
+	@touch $@
 modules/TruthVertexFinder.h: \
 	classes/DelphesModule.h
 	@touch $@
@@ -2172,7 +2237,8 @@ classes/DelphesSTDHEPReader.h: \
 	classes/DelphesXDRReader.h
 	@touch $@
 external/fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh: \
-	external/fastjet/JetDefinition.hh
+	external/fastjet/JetDefinition.hh \
+	external/fastjet/internal/thread_safety_helpers.hh
 	@touch $@
 external/PUPPI/PuppiContainer.hh: \
 	external/fastjet/PseudoJet.hh
@@ -2185,6 +2251,9 @@ external/fastjet/RangeDefinition.hh: \
 	@touch $@
 modules/CscClusterEfficiency.h: \
 	classes/DelphesModule.h
+	@touch $@
+external/fastjet/internal/base.hh: \
+	external/fastjet/config.h
 	@touch $@
 external/fastjet/PseudoJetStructureBase.hh: \
 	external/fastjet/internal/base.hh
@@ -2224,8 +2293,14 @@ modules/Weighter.h: \
 modules/TaggingParticlesSkimmer.h: \
 	classes/DelphesModule.h
 	@touch $@
+external/fastjet/CompositeJetStructure.hh: \
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/PseudoJetStructureBase.hh \
+	external/fastjet/JetDefinition.hh
+	@touch $@
 external/fastjet/internal/BasicRandom.hh: \
-	external/fastjet/internal/base.hh
+	external/fastjet/internal/base.hh \
+	external/fastjet/config.h
 	@touch $@
 modules/ClusterCounting.h: \
 	classes/DelphesModule.h
@@ -2235,10 +2310,23 @@ modules/SimpleCalorimeter.h: \
 	@touch $@
 external/fastjet/plugins/CDFCones/fastjet/CDFJetCluPlugin.hh: \
 	external/fastjet/JetDefinition.hh \
-	external/fastjet/PseudoJet.hh
+	external/fastjet/PseudoJet.hh \
+	external/fastjet/internal/thread_safety_helpers.hh
+	@touch $@
+external/fastjet/tools/TopTaggerBase.hh: \
+	external/fastjet/internal/base.hh \
+	external/fastjet/tools/Transformer.hh
 	@touch $@
 external/ExRootAnalysis/ExRootTask.h: \
 	external/ExRootAnalysis/ExRootConfReader.h
+	@touch $@
+external/fastjet/tools/JetMedianBackgroundEstimator.hh: \
+	external/fastjet/config.h \
+	external/fastjet/ClusterSequenceAreaBase.hh \
+	external/fastjet/AreaDefinition.hh \
+	external/fastjet/FunctionOfPseudoJet.hh \
+	external/fastjet/Selector.hh \
+	external/fastjet/tools/BackgroundEstimatorBase.hh
 	@touch $@
 external/fastjet/tools/Subtractor.hh: \
 	external/fastjet/internal/base.hh \
@@ -2248,7 +2336,8 @@ external/fastjet/tools/Subtractor.hh: \
 external/fastjet/internal/LazyTiling9SeparateGhosts.hh: \
 	external/fastjet/internal/MinHeap.hh \
 	external/fastjet/ClusterSequence.hh \
-	external/fastjet/internal/LazyTiling9Alt.hh
+	external/fastjet/internal/LazyTiling9Alt.hh \
+	external/fastjet/config.h
 	@touch $@
 external/fastjet/internal/Dnn3piCylinder.hh: \
 	external/fastjet/internal/DynamicNearestNeighbours.hh \
@@ -2279,7 +2368,9 @@ modules/StatusPidFilter.h: \
 	classes/DelphesModule.h
 	@touch $@
 external/fastjet/LimitedWarning.hh: \
-	external/fastjet/internal/base.hh
+	external/fastjet/internal/base.hh \
+	external/fastjet/config.h \
+	external/fastjet/internal/thread_safety_helpers.hh
 	@touch $@
 external/fastjet/config.h: \
 	external/fastjet/config_win.h
@@ -2289,6 +2380,11 @@ modules/CscClusterId.h: \
 	@touch $@
 classes/DelphesClasses.h: \
 	classes/SortableObject.h
+	@touch $@
+external/fastjet/tools/JHTopTagger.hh: \
+	external/fastjet/tools/TopTaggerBase.hh \
+	external/fastjet/CompositeJetStructure.hh \
+	external/fastjet/LimitedWarning.hh
 	@touch $@
 external/fastjet/ClusterSequencePassiveArea.hh: \
 	external/fastjet/PseudoJet.hh \
